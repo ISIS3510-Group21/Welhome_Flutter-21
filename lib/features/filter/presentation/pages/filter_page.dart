@@ -45,7 +45,6 @@ class FilterPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 🔹 Título
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
@@ -107,7 +106,6 @@ class FilterPage extends StatelessWidget {
                           children: [
                             FilterChipCustom(
                               label: 'Private Backyard',
-                              selected: true,
                               onTap: () =>
                                   debugPrint("Filtro: Private Backyard"),
                             ),
