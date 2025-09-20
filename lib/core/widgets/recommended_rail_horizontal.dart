@@ -48,7 +48,7 @@ class ProductCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppTextStyles.tittleMedium,
+                    style: AppTextStyles.tittleSmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -67,8 +67,7 @@ class ProductCard extends StatelessWidget {
                       Text(
                         '$reviews reviews',
                         style: AppTextStyles.textSmall.copyWith(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
+                          color: AppColors.coolGray,
                         ),
                       ),
                     ],

@@ -13,60 +13,59 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: AppSearchBar(),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Recommended for you',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
+        child: SingleChildScrollView( // 🔹 Scroll en toda la página
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: AppSearchBar(),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Recommended for you',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_none, size: 28),
-                    onPressed: () {},
-                  ),
-                ],
+                    IconButton(
+                      icon: const Icon(Icons.notifications_none, size: 28),
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 320,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: products.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 16),
-                itemBuilder: (context, index) {
-                  final product = products[index];
-                  return ProductCard(
-                    imageUrl: product['imageUrl'] as String,
-                    title: product['title'] as String,
-                    rating: product['rating'] as double,
-                    reviews: product['reviews'] as int,
-                    price: product['price'] as String,
-                    onTap: () {},
-                  );
-                },
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 285,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: products.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 16),
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    return ProductCard(
+                      imageUrl: product['imageUrl'] as String,
+                      title: product['title'] as String,
+                      rating: product['rating'] as double,
+                      reviews: product['reviews'] as int,
+                      price: product['price'] as String,
+                      onTap: () {},
+                    );
+                  },
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: RecentlyViewedSection(
+              RecentlyViewedSection(
                 recentItems: recentlyViewedProducts,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: CustomBottomNavBar(
@@ -79,9 +78,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
-//This is just for demonstration purposes
-//In a real app, you would fetch this data from an API or a database
-
+// Ejemplo de productos
 final products = [
   {
     'imageUrl': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',

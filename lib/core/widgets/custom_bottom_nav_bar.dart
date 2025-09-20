@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:welhome/features/home/presentation/pages/home_page.dart';
 import 'package:welhome/features/map_search/presentation/pages/map_search_page.dart';
+import 'package:welhome/features/filter/presentation/pages/filter_page.dart';
 import '../constants/app_colors.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
@@ -24,6 +25,12 @@ class CustomBottomNavBar extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        }
+        if (index == 2 ) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const FilterPage()),
           );
         }
         if (index == 3 ) {

@@ -15,33 +15,39 @@ class RecentlyViewedSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // 🔹 Título
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
             'Recently seen',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w600,
             ),
           ),
         ),
         const SizedBox(height: 12),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: recentItems.length,
-            itemBuilder: (context, index) {
-              final item = recentItems[index];
-              return RecentlyViewedItem(
+
+        // 🔹 Lista vertical SIN Expanded
+        ListView.builder(
+          shrinkWrap: true, // Para que tome solo el espacio que necesita
+          physics: const NeverScrollableScrollPhysics(), // El scroll lo maneja el padre (SingleChildScrollView)
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: recentItems.length,
+          itemBuilder: (context, index) {
+            final item = recentItems[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16.0), // separa los items
+              child: RecentlyViewedItem(
                 imageUrl: item['imageUrl'],
                 title: item['title'],
                 rating: item['rating'],
                 reviews: item['reviews'],
                 price: item['price'],
                 onTap: () {},
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ],
     );
