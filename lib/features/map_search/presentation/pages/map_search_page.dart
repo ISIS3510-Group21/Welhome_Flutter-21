@@ -34,7 +34,7 @@ class MapSearchPage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: SizedBox(
-                height: 200,
+                height: 325,
                 width: double.infinity,
                 child: FlutterMap(
                   options: const MapOptions(
@@ -61,21 +61,21 @@ class MapSearchPage extends StatelessWidget {
                     title: "Portal de los Rosales",
                     rating: 4.95,
                     price: "\$700’000 /month",
-                    useColorPlaceholder: true,
+                    imageUrl: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd",
                   ),
                   SizedBox(height: 12),
                   ItemPostList(
                     title: "Parque Central Bavaria",
                     rating: 4.75,
                     price: "\$850’000 /month",
-                    useColorPlaceholder: true,
+                    imageUrl: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd",
                   ),
                   SizedBox(height: 12),
                   ItemPostList(
                     title: "La Candelaria Colonial",
                     rating: 4.88,
                     price: "\$1’200’000 /month",
-                    useColorPlaceholder: true,
+                    imageUrl: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd",
                   ),
                 ],
               ),
