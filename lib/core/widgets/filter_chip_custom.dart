@@ -4,13 +4,13 @@ import 'package:welhome/core/constants/app_colors.dart';
 
 class FilterChipCustom extends StatelessWidget {
   final String label;
-  final bool selected;
+  final bool isSelected;
   final VoidCallback? onTap;
 
   const FilterChipCustom({
     super.key,
     required this.label,
-    this.selected = false,
+    this.isSelected = false,
     this.onTap,
   });
 
@@ -22,7 +22,7 @@ class FilterChipCustom extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         margin: const EdgeInsets.only(right: 8),
         decoration: ShapeDecoration(
-          color: selected ? AppColors.violetBlue : AppColors.lavenderLight,
+          color: isSelected ? AppColors.violetBlue : AppColors.lavenderLight,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -33,7 +33,7 @@ class FilterChipCustom extends StatelessWidget {
             fontSize: 16,
             fontWeight: FontWeight.w500,
             height: 1.38,
-            color: selected ? AppColors.white : AppColors.black,
+            color: isSelected ? AppColors.white : AppColors.black,
           ),
         ),
       ),
