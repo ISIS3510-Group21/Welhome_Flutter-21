@@ -31,19 +31,15 @@ class FilterPage extends StatelessWidget {
         'price': '\$700\'000',
       },
     ];
-
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
         child: Column(
           children: [
-            // 🔹 Barra de búsqueda fija arriba
             const Padding(
               padding: EdgeInsets.all(16.0),
               child: AppSearchBar(),
             ),
-
-            // 🔹 Contenido scrolleable
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
