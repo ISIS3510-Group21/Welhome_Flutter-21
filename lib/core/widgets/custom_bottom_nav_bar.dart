@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:welhome/features/home/presentation/pages/home_page.dart';
+import 'package:welhome/features/map_search/presentation/pages/map_search_page.dart';
 import '../constants/app_colors.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
@@ -17,7 +19,20 @@ class CustomBottomNavBar extends StatelessWidget {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       currentIndex: currentIndex,
-      onTap: onTap,
+      onTap: (index) {
+        if (index == 0 ) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        }
+        if (index == 3 ) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const MapSearchPage()),
+          );
+        }
+      },
       backgroundColor: AppColors.white,
       selectedItemColor: AppColors.violetBlue,
       unselectedItemColor: AppColors.coolGray,
