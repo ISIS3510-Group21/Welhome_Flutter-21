@@ -7,30 +7,92 @@ import 'package:welhome/core/constants/app_colors.dart';
 import 'package:welhome/core/widgets/category_card.dart';
 import 'package:welhome/core/widgets/filter_chip_custom.dart';
 import 'package:welhome/core/widgets/recommended_rail_horizontal.dart';
+import 'package:welhome/features/filter/data/services/property_service.dart';
+import 'package:welhome/features/filter/domain/models/property.dart';
 
-class FilterPage extends StatelessWidget {
+class FilterPage extends StatefulWidget {
   const FilterPage({super.key});
 
   @override
+  State<FilterPage> createState() => _FilterPageState();
+}
+
+class _FilterPageState extends State<FilterPage> {
+  final PropertyService _propertyService = PropertyService();
+  List<Property> _properties = [];
+  List<String> _selectedAmenities = [];
+  List<String> _selectedHousingTags = [];
+  Map<String, List<String>> _availableTags = {
+    'amenities': [],
+    'housingTags': [],
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    final tags = await _propertyService.getAllTags();
+    final properties = await _propertyService.getProperties();
+    
+    setState(() {
+      _availableTags = tags;
+      _properties = properties;
+    });
+  }
+
+  void _updateFilters() async {
+    final filteredProperties = await _propertyService.getProperties(
+      selectedAmenities: _selectedAmenities,
+      selectedHousingTags: _selectedHousingTags,
+    );
+    
+    setState(() {
+      _properties = filteredProperties;
+    });
+  }
+
+  void _toggleHousingTag(String tag) {
+    setState(() {
+      if (_selectedHousingTags.contains(tag)) {
+        _selectedHousingTags.remove(tag);
+      } else {
+        _selectedHousingTags.add(tag);
+      }
+    });
+    _updateFilters();
+  }
+
+  void _toggleAmenity(String amenity) {
+    setState(() {
+      if (_selectedAmenities.contains(amenity)) {
+        _selectedAmenities.remove(amenity);
+      } else {
+        _selectedAmenities.add(amenity);
+      }
+    });
+    _updateFilters();
+  }
+
+  IconData _getIconForHousingType(String type) {
+    switch (type) {
+      case 'House':
+        return Icons.house_rounded;
+      case 'Room':
+        return Icons.meeting_room_rounded;
+      case 'Cabin':
+        return Icons.cabin_rounded;
+      case 'Apartment':
+        return Icons.apartment_rounded;
+      default:
+        return Icons.home_rounded;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final products = [
-      {
-        'imageUrl':
-            'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-        'title': 'Portal de los Rosales',
-        'rating': 4.95,
-        'reviews': 22,
-        'price': '\$700\'000',
-      },
-      {
-        'imageUrl':
-            'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd',
-        'title': 'Living 72',
-        'rating': 4.95,
-        'reviews': 25,
-        'price': '\$700\'000',
-      },
-    ];
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
@@ -54,49 +116,27 @@ class FilterPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
 
-                    // 🔹 Categorías fila 1
+                    // Housing Type Categories
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
                         children: [
-                          CategoryCard(
-                            icon: Icons.house_rounded,
-                            label: 'Houses',
-                            onTap: () => debugPrint("Filtro: Houses"),
-                          ),
-                          const SizedBox(width: 8),
-                          CategoryCard(
-                            icon: Icons.meeting_room_rounded,
-                            label: 'Rooms',
-                            onTap: () => debugPrint("Filtro: Rooms"),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // 🔹 Categorías fila 2
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        children: [
-                          CategoryCard(
-                            icon: Icons.cabin_rounded,
-                            label: 'Cabins',
-                            onTap: () => debugPrint("Filtro: Cabins"),
-                          ),
-                          const SizedBox(width: 8),
-                          CategoryCard(
-                            icon: Icons.apartment_rounded,
-                            label: 'Apartments',
-                            onTap: () => debugPrint("Filtro: Apartments"),
-                          ),
+                          for (final tag in _availableTags['housingTags'] ?? [])
+                            if (tag == 'House' || tag == 'Room' || tag == 'Cabin' || tag == 'Apartment')
+                              CategoryCard(
+                                icon: _getIconForHousingType(tag),
+                                label: tag,
+                                isSelected: _selectedHousingTags.contains(tag),
+                                onTap: () => _toggleHousingTag(tag),
+                              ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
 
-                    // 🔹 Filtros horizontales
+                    // Amenities Filter Chips
                     SizedBox(
                       height: 48,
                       child: SingleChildScrollView(
@@ -104,46 +144,39 @@ class FilterPage extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
                           children: [
-                            FilterChipCustom(
-                              label: 'Private Backyard',
-                              onTap: () =>
-                                  debugPrint("Filtro: Private Backyard"),
-                            ),
-                            FilterChipCustom(
-                              label: 'Vape Free',
-                              onTap: () => debugPrint("Filtro: Vape Free"),
-                            ),
-                            FilterChipCustom(
-                              label: 'Car Parking',
-                              onTap: () => debugPrint("Filtro: Car Parking"),
-                            ),
-                            FilterChipCustom(
-                              label: 'Pet Friendly',
-                              onTap: () => debugPrint("Filtro: Pet Friendly"),
-                            ),
+                            for (final amenity in _availableTags['amenities'] ?? [])
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: FilterChipCustom(
+                                  label: amenity,
+                                  isSelected: _selectedAmenities.contains(amenity),
+                                  onTap: () => _toggleAmenity(amenity),
+                                ),
+                              ),
                           ],
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
 
-                    // 🔹 Rail horizontal de productos
+                    // Property Results
                     SizedBox(
                       height: 320,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: products.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(width: 16),
+                        itemCount: _properties.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 16),
                         itemBuilder: (context, index) {
-                          final product = products[index];
+                          final property = _properties[index];
                           return ProductCard(
-                            imageUrl: product['imageUrl'] as String,
-                            title: product['title'] as String,
-                            rating: product['rating'] as double,
-                            reviews: product['reviews'] as int,
-                            price: product['price'] as String,
+                            imageUrl: property.pictures.isNotEmpty 
+                              ? property.pictures.first 
+                              : 'https://via.placeholder.com/300x200',
+                            title: property.title,
+                            rating: property.rating,
+                            reviews: 0, // TODO: Agregar reviews cuando estén disponibles
+                            price: '\$${property.price.toStringAsFixed(2)}',
                             onTap: () {},
                           );
                         },

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "143622710409",
+    "project_id": "welhome-21",
+    "storage_bucket": "welhome-21.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:143622710409:android:07a29c7cd4669a7e621258",
+        "android_client_info": {
+          "package_name": "com.example.welhome"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIReW0J867Fxo6LerepDzRLVvoP8AaYJA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:143622710409:android:4a764102ca5e2e0f621258",
+        "android_client_info": {
+          "package_name": "com.team21.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIReW0J867Fxo6LerepDzRLVvoP8AaYJA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
