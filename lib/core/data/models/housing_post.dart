@@ -7,10 +7,12 @@ class HousingPost {
   final Timestamp creationDate;
   final Timestamp updateAt;
   final Timestamp closureDate;
+  final Timestamp statusChange;
   final String address;
   final double price;
   final double rating;
   final String title;
+  final String status; 
   final String description;
   final Location location;
   final String thumbnail;
@@ -27,9 +29,11 @@ class HousingPost {
     Timestamp? creationDate,
     Timestamp? updateAt,
     Timestamp? closureDate,
+    Timestamp? statusChange,
     this.address = "",
     this.price = 0.0,
     this.rating = 0.0,
+    this.status = "available",
     this.title = "No title",
     this.description = "",
     Location? location,
@@ -45,6 +49,7 @@ class HousingPost {
   })  : creationDate = creationDate ?? Timestamp.now(),
         updateAt = updateAt ?? Timestamp.now(),
         closureDate = closureDate ?? Timestamp.now(),
+        statusChange = statusChange ?? Timestamp.now(),
         location = location ?? Location(),
         roommateProfile = roommateProfile ?? RoommateProfile();
 
@@ -54,9 +59,11 @@ class HousingPost {
       creationDate: data['creationDate'] ?? Timestamp.now(),
       updateAt: data['updateAt'] ?? Timestamp.now(),
       closureDate: data['closureDate'] ?? Timestamp.now(),
+      statusChange: data['statusChange'] ?? Timestamp.now(),
       address: data['address'] ?? "",
       price: (data['price'] ?? 0).toDouble(),
       rating: (data['rating'] ?? 0).toDouble(),
+      status: data['status'] ?? "available",
       title: data['title'] ?? "No title",
       description: data['description'] ?? "",
       location: data['location'] != null
@@ -90,9 +97,11 @@ class HousingPost {
       'creationDate': creationDate,
       'updateAt': updateAt,
       'closureDate': closureDate,
+      'statusChange': statusChange,
       'address': address,
       'price': price,
       'rating': rating,
+      'status': status,
       'title': title,
       'description': description,
       'location': location.toMap(),
