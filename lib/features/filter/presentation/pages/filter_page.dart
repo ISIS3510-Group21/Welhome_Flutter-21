@@ -20,11 +20,11 @@ class FilterPage extends StatefulWidget {
 class _FilterPageState extends State<FilterPage> {
   final PropertyService _propertyService = PropertyService();
   List<Property> _properties = [];
-  List<String> _selectedAmenities = [];
-  List<String> _selectedHousingTags = [];
-  Map<String, List<String>> _availableTags = {
-    'amenities': [],
-    'housingTags': [],
+  final List<String> _selectedAmenities = [];
+  final List<String> _selectedHousingTags = [];
+  Map<String, dynamic> _availableTags = {
+    'amenitiesByCategory': <String, List<String>>{},
+    'housingTags': <String>[],
   };
 
   @override
@@ -136,48 +136,77 @@ class _FilterPageState extends State<FilterPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Amenities Filter Chips
-                    SizedBox(
-                      height: 48,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            for (final amenity in _availableTags['amenities'] ?? [])
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: FilterChipCustom(
-                                  label: amenity,
-                                  isSelected: _selectedAmenities.contains(amenity),
-                                  onTap: () => _toggleAmenity(amenity),
-                                ),
-                              ),
-                          ],
-                        ),
+                    // Amenities Filter Groups
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Amenidades', 
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          ...(_availableTags['amenitiesByCategory'] as Map<String, List<String>>)
+                              .entries
+                              .map((category) => ExpansionTile(
+                                    title: Text(
+                                      category.key,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    initiallyExpanded: false,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                        child: Wrap(
+                                          spacing: 8,
+                                          runSpacing: 8,
+                                          children: [
+                                            for (final amenity in category.value)
+                                              FilterChipCustom(
+                                                label: amenity,
+                                                isSelected: _selectedAmenities.contains(amenity),
+                                                onTap: () => _toggleAmenity(amenity),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                    ],
+                                  ))
+                              ,
+                        ],
                       ),
                     ),
                     const SizedBox(height: 16),
 
                     // Property Results
-                    SizedBox(
-                      height: 320,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: _properties.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 16),
+                        separatorBuilder: (_, __) => const SizedBox(height: 16),
                         itemBuilder: (context, index) {
                           final property = _properties[index];
-                          return ProductCard(
-                            imageUrl: property.pictures.isNotEmpty 
-                              ? property.pictures.first 
-                              : 'https://via.placeholder.com/300x200',
-                            title: property.title,
-                            rating: property.rating,
-                            reviews: 0, // TODO: Agregar reviews cuando estén disponibles
-                            price: '\$${property.price.toStringAsFixed(2)}',
-                            onTap: () {},
+                          return SizedBox(
+                            width: double.infinity,
+                            child: ProductCard(
+                              imageUrl: property.pictures.isNotEmpty 
+                                ? property.pictures.first 
+                                : 'https://via.placeholder.com/300x200',
+                              title: property.title,
+                              rating: property.rating,
+                              reviews: 0, // TODO: Agregar reviews cuando estén disponibles
+                              price: '\$${property.price.toStringAsFixed(2)}',
+                              onTap: () {},
+                            ),
                           );
                         },
                       ),

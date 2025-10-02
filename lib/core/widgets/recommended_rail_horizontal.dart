@@ -55,7 +55,7 @@ class ProductCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.star, color: AppColors.black, size: 18),
+                      const Icon(Icons.star, color: AppColors.black, size: 18),
                       const SizedBox(width: 4),
                       Text(
                         rating.toStringAsFixed(2),

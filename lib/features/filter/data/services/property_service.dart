@@ -13,144 +13,167 @@ class PropertyService {
       print('Selected amenities: $selectedAmenities');
       print('Selected housing tags: $selectedHousingTags');
 
-      // Obtener todos los documentos de HousingPost
-      final QuerySnapshot housingPostsSnapshot = await _firestore
-          .collection('HousingPost')
-          .get();
+      QuerySnapshot housingSnapshot;
 
-      print('Found ${housingPostsSnapshot.docs.length} housing posts');
+      // Si hay filtros de amenidades
+      if (selectedAmenities?.isNotEmpty == true) {
+        try {
+          // Intentar usar collectionGroup (requiere índice)
+          final amenityQuery = await _firestore
+              .collectionGroup('Amenities')
+              .where('name', whereIn: selectedAmenities)
+              .get();
 
+          final postIds = amenityQuery.docs
+              .map((doc) => doc.reference.parent.parent?.id)
+              .where((id) => id != null)
+              .cast<String>()
+              .toSet();
+
+          if (postIds.isEmpty) {
+            print('No matching posts found for amenities');
+            return [];
+          }
+
+          print('Found ${postIds.length} posts with matching amenities');
+          housingSnapshot = await _firestore
+              .collection('HousingPost')
+              .where(FieldPath.documentId, whereIn: postIds.take(10).toList())
+              .get();
+        } catch (e) {
+          print(
+              'CollectionGroup query failed, falling back to simple query: $e');
+          // Fallback: obtener posts y filtrar manualmente
+          housingSnapshot =
+              await _firestore.collection('HousingPost').limit(10).get();
+        }
+      } else {
+        // Sin filtros de amenidades, obtener los últimos posts
+        housingSnapshot =
+            await _firestore.collection('HousingPost').limit(10).get();
+      }
+      print('Processing ${housingSnapshot.docs.length} housing posts');
       List<Property> properties = [];
 
-      for (var doc in housingPostsSnapshot.docs) {
+      // Procesar cada documento
+      for (var doc in housingSnapshot.docs) {
         try {
-          print('Processing housing post: ${doc.id}');
-          
-          // Verificar los filtros si están activos
-          bool includeProperty = true;
+          Property property = Property.fromJson({
+            'id': doc.id,
+            ...doc.data() as Map<String, dynamic>,
+          });
 
-          if (selectedAmenities != null && selectedAmenities.isNotEmpty) {
-            try {
-              final amenitiesSnapshot = await doc.reference.collection('Amenities').get();
-              final amenityNames = amenitiesSnapshot.docs
-                  .map((amenityDoc) => amenityDoc.data()['name']?.toString())
-                  .where((name) => name != null)
-                  .toList();
-              
-              print('Housing post ${doc.id} amenities: $amenityNames');
-              
-              // Verificar si tiene al menos una de las amenidades seleccionadas
-              includeProperty = amenityNames.any((name) => selectedAmenities.contains(name));
-            } catch (e) {
-              print('Error checking amenities for ${doc.id}: $e');
-              includeProperty = false; // Si no podemos verificar las amenidades, excluimos la propiedad
+          // Cargar amenidades
+          try {
+            final amenitiesSnapshot =
+                await doc.reference.collection('Amenities').get();
+            property.amenities = amenitiesSnapshot.docs
+                .map((doc) => doc.data()['name'] as String?)
+                .where((name) => name != null)
+                .cast<String>()
+                .toList();
+
+            // Verificar filtro de amenidades
+            if (selectedAmenities?.isNotEmpty == true &&
+                !property.amenities
+                    .any((a) => selectedAmenities!.contains(a))) {
+              continue; // Skip if doesn't match amenities filter
+            }
+          } catch (e) {
+            print('Error loading amenities for ${doc.id}: $e');
+            property.amenities = [];
+            if (selectedAmenities?.isNotEmpty == true) {
+              continue; // Skip if amenities are required but failed to load
             }
           }
 
-          if (includeProperty && selectedHousingTags != null && selectedHousingTags.isNotEmpty) {
-            try {
-              final tagsSnapshot = await doc.reference.collection('Tag').get();
-              final tagNames = tagsSnapshot.docs
-                  .map((tagDoc) => tagDoc.data()['name']?.toString())
-                  .where((name) => name != null)
-                  .toList();
-              
-              print('Housing post ${doc.id} tags: $tagNames');
-              
-              // Verificar si tiene al menos uno de los tags seleccionados
-              includeProperty = tagNames.any((name) => selectedHousingTags.contains(name));
-            } catch (e) {
-              print('Error checking tags for ${doc.id}: $e');
-              includeProperty = false; // Si no podemos verificar los tags, excluimos la propiedad
+          // Cargar tags
+          try {
+            final tagsSnapshot = await doc.reference.collection('Tag').get();
+            property.housingTags = tagsSnapshot.docs
+                .map((doc) => doc.data()['name'] as String?)
+                .where((name) => name != null)
+                .cast<String>()
+                .toList();
+
+            // Verificar filtro de tags
+            if (selectedHousingTags?.isNotEmpty == true &&
+                !property.housingTags
+                    .any((t) => selectedHousingTags!.contains(t))) {
+              continue; // Skip if doesn't match tags filter
+            }
+          } catch (e) {
+            print('Error loading tags for ${doc.id}: $e');
+            property.housingTags = [];
+            if (selectedHousingTags?.isNotEmpty == true) {
+              continue; // Skip if tags are required but failed to load
             }
           }
 
-          if (includeProperty) {
-            print('Including housing post: ${doc.id}');
-            
-            // Crear la propiedad con los datos base del documento
-            Property property = Property.fromJson({
-              'id': doc.id,
-              ...doc.data() as Map<String, dynamic>,
-            });
-
-            // Intentar obtener amenidades
-            try {
-              final amenitiesSnapshot = await doc.reference.collection('Amenities').get();
-              property.amenities = amenitiesSnapshot.docs
-                  .map((amenityDoc) => amenityDoc.data()['name'] as String?)
-                  .where((name) => name != null)
-                  .cast<String>()
-                  .toList();
-              print('Housing post ${doc.id} amenities: ${property.amenities}');
-            } catch (e) {
-              print('Error getting amenities for ${doc.id}: $e');
-              property.amenities = [];
-            }
-
-            // Intentar obtener tags
-            try {
-              final tagsSnapshot = await doc.reference.collection('Tag').get();
-              property.housingTags = tagsSnapshot.docs
-                  .map((tagDoc) => tagDoc.data()['name'] as String?)
-                  .where((name) => name != null)
-                  .cast<String>()
-                  .toList();
-              print('Housing post ${doc.id} tags: ${property.housingTags}');
-            } catch (e) {
-              print('Error getting tags for ${doc.id}: $e');
-              property.housingTags = [];
-            }
-
-            // Intentar obtener imágenes
-            try {
-              final picturesSnapshot = await doc.reference.collection('Pictures').get();
-              property.pictures = picturesSnapshot.docs
-                  .map((picDoc) => picDoc.data()['url'] as String?)
-                  .where((url) => url != null)
-                  .cast<String>()
-                  .toList();
-              print('Housing post ${doc.id} pictures: ${property.pictures.length}');
-            } catch (e) {
-              print('Error getting pictures for ${doc.id}: $e');
-              property.pictures = [];
-            }
-
-            properties.add(property);
+          // Cargar imágenes
+          try {
+            final picturesSnapshot =
+                await doc.reference.collection('Pictures').get();
+            property.pictures = picturesSnapshot.docs
+                .map((doc) => doc.data()['url'] as String?)
+                .where((url) => url != null)
+                .cast<String>()
+                .toList();
+          } catch (e) {
+            print('Error loading pictures for ${doc.id}: $e');
+            property.pictures = [];
           }
+
+          properties.add(property);
+          print('Added property ${doc.id} to results');
         } catch (e) {
           print('Error processing document ${doc.id}: $e');
-          continue;  // Saltar este documento si hay error
+          continue;
         }
       }
-      
-      print('Retrieved ${properties.length} properties');  // Debug
+
+      print('Retrieved ${properties.length} matching properties');
       return properties;
     } catch (e) {
-      print('Error getting properties: $e');
+      print('Error in getProperties: $e');
       return [];
     }
   }
 
-  // Obtener todas las etiquetas disponibles
-  Future<Map<String, List<String>>> getAllTags() async {
+// Obtener todas las etiquetas disponibles
+  Future<Map<String, dynamic>> getAllTags() async {
     try {
-      // Lista predefinida de amenities
-      final amenities = [
-        'WiFi', 'Refrigerator', 'Dishwasher', 'Pets Allowed', 'Gym', 'Pool', 
-        'Garden', 'Elevator', 'Security', 'Desk', 'Coffee Maker', 'Washing Machine', 
-        'Oven', 'Playstation', 'Workspace', 'Fireplace', 'Terrace', 'BBQ', 'Dryer', 
-        'Parking', 'Balcony', 'Air Conditioning', 'Heating', 'TV', 'Microwave'
-      ];
-
-      // Lista predefinida de housing tags
+      // Amenities agrupados por categoría
+      final Map<String, List<String>> amenitiesByCategory = {
+        'Básicos': ['WiFi', 'Air Conditioning', 'Heating'],
+        'Cocina': [
+          'Refrigerator',
+          'Dishwasher',
+          'Oven',
+          'Microwave',
+          'Coffee Maker'
+        ],
+        'Lavandería': ['Washing Machine', 'Dryer'],
+        'Entretenimiento': ['TV', 'Playstation', 'BBQ'],
+        'Espacios': ['Workspace', 'Garden', 'Terrace', 'Balcony', 'Parking'],
+        'Comodidades': ['Elevator', 'Security', 'Desk', 'Fireplace'],
+        'Reglas': ['Pets Allowed'],
+      };
+      // Lista predefinida de housing tags (tipos de vivienda)
       final housingTags = [
-        'House', 'Penthouse', 'Apartment', 'Cabin', 'Room', 'PrivateBackyard', 
-        'Vape-Free', 'Studio', 'Loft', 'SharedKitchen'
+        'House',
+        'Penthouse',
+        'Apartment',
+        'Cabin',
+        'Room',
+        'PrivateBackyard',
+        'Vape-Free',
+        'Studio',
+        'Loft',
+        'SharedKitchen'
       ];
-      
       return {
-        'amenities': amenities,
+        'amenitiesByCategory': amenitiesByCategory,
         'housingTags': housingTags,
       };
     } catch (e) {
