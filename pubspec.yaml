@@ -28,6 +28,9 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+
+  country_picker: ^2.0.20
+
   flutter:
     sdk: flutter
 
@@ -39,6 +42,7 @@ dependencies:
   flutter_map: ^7.0.0
   latlong2: ^0.9.0
   firebase_core: ^4.1.1
+  firebase_auth: 6.1.0
   cloud_firestore: ^6.0.2
   flutter_bloc: ^9.1.1
   google_maps_flutter: ^2.9.0
@@ -71,8 +75,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+     - android/app/assets/images/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
