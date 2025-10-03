@@ -49,7 +49,7 @@ class MapSectionWidget extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'No accommodations in this area',
+              'No accommodations within ${state.searchRadiusKm.toInt()} km',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.grey[600],
               ),

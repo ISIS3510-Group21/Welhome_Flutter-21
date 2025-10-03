@@ -129,17 +129,9 @@ class _HousingListWidgetState extends State<HousingListWidget> {
               ),
               const SizedBox(height: 16),
               Text(
-                'No accommodations found',
+                'No accommodations found within ${state.searchRadiusKm.toInt()} km',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                state.suggestion,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[500],
                 ),
               ),
             ],

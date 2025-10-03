@@ -37,21 +37,6 @@ class MapSearchLoadingPosts extends MapSearchState {
   List<Object> get props => [userLocation, message];
 }
 
-// State when filtering results
-class MapSearchFiltering extends MapSearchState {
-  final LatLng userLocation;
-  final List<HousingPostWithDistance> housingPosts;
-  final String message;
-  
-  const MapSearchFiltering({
-    required this.userLocation,
-    required this.housingPosts,
-    this.message = "Applying filters...",
-  });
-  
-  @override
-  List<Object> get props => [userLocation, housingPosts, message];
-}
 
 // Final state when everything is loaded and ready
 class MapSearchLoaded extends MapSearchState {
@@ -65,15 +50,9 @@ class MapSearchLoaded extends MapSearchState {
     required this.userLocation,
     required this.housingPostsWithDistance,
     required this.totalResults,
-    this.searchRadiusKm = 50.0,
+    this.searchRadiusKm = 15.0,
     this.selectedPostId,
   });
-  
-  // Getter for closest posts (top 5 within 5km)
-  List<HousingPostWithDistance> get closestPosts => housingPostsWithDistance
-      .where((post) => post.distanceInKm <= 5.0)
-      .take(5)
-      .toList();
   
   // Getter to check if there are results
   bool get hasResults => housingPostsWithDistance.isNotEmpty;
@@ -111,16 +90,14 @@ class MapSearchLoaded extends MapSearchState {
 class MapSearchNoResults extends MapSearchState {
   final LatLng userLocation;
   final double searchRadiusKm;
-  final String suggestion;
   
   const MapSearchNoResults({
     required this.userLocation,
-    this.searchRadiusKm = 50.0,
-    this.suggestion = "Try expanding the search radius",
+    this.searchRadiusKm = 15.0,
   });
   
   @override
-  List<Object> get props => [userLocation, searchRadiusKm, suggestion];
+  List<Object> get props => [userLocation, searchRadiusKm];
 }
 
 // Error state with relevant information
@@ -216,26 +193,10 @@ class MapSearchRefreshing extends MapSearchState {
   const MapSearchRefreshing({
     required this.userLocation,
     required this.currentPosts,
-    this.newSearchRadiusKm = 50.0,
+    this.newSearchRadiusKm = 15.0,
     this.selectedPostId,
   });
   
   @override
   List<Object> get props => [userLocation, currentPosts, newSearchRadiusKm, selectedPostId ?? ''];
-}
-
-// State for when loading more posts (pagination)
-class MapSearchLoadingMore extends MapSearchState {
-  final LatLng userLocation;
-  final List<HousingPostWithDistance> currentPosts;
-  final String message;
-  
-  const MapSearchLoadingMore({
-    required this.userLocation,
-    required this.currentPosts,
-    this.message = "Loading more accommodations...",
-  });
-  
-  @override
-  List<Object> get props => [userLocation, currentPosts, message];
 }

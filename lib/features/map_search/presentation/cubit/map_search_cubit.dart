@@ -77,7 +77,6 @@ class MapSearchCubit extends Cubit<MapSearchState> {
       if (filtered.isEmpty) {
         emit(MapSearchNoResults(
           userLocation: userLocation,
-          suggestion: "No accommodations found. Check back later for new listings.",
         ));
       } else {
         emit(MapSearchLoaded(

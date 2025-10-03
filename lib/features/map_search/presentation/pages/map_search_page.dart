@@ -1,4 +1,3 @@
-// features/map_search/page/map_search_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:welhome/core/widgets/app_search_bar.dart';
