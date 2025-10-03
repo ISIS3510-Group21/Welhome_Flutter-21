@@ -1,96 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:welhome/core/widgets/app_search_bar.dart';
 import 'package:welhome/core/widgets/custom_bottom_nav_bar.dart';
 import 'package:welhome/core/constants/app_colors.dart';
 import 'package:welhome/core/constants/app_text_styles.dart';
-import 'package:welhome/core/widgets/item_post_list.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import '../widgets/map_section_widget.dart';
+import '../widgets/housing_list_widget.dart';
+import '../widgets/map_search_provider.dart';
+import '../cubit/map_search_cubit.dart';
+import '../cubit/map_search_state.dart';
 
 class MapSearchPage extends StatelessWidget {
   const MapSearchPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: AppSearchBar(),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Map Search',
-                style: AppTextStyles.titleLarge,
+    return MapSearchProvider(
+      child: Scaffold(
+        backgroundColor: AppColors.white,
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: AppSearchBar(),
               ),
-            ),
-            
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: SizedBox(
-                height: 325,
-                width: double.infinity,
-                child: FlutterMap(
-                  options: const MapOptions(
-                    initialCenter: LatLng(4.7110, -74.0721), // Bogotá
-                    initialZoom: 12,
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate:
-                          "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                      userAgentPackageName: "com.example.welhome",
-                    ),
-                  ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: BlocBuilder<MapSearchCubit, MapSearchState>(
+                  builder: (context, state) {
+                    String title = 'Map Search';
+                    if (state is MapSearchLoaded) {
+                      final count = state.housingPostsWithDistance.length;
+                      title = 'Map Search';
+                    } else if (state is MapSearchLoadingPosts) {
+                      title = 'Searching...';
+                    }
+                    return Text(
+                      title,
+                      style: AppTextStyles.titleLarge,
+                    );
+                  },
                 ),
               ),
-            ),
-
-            // 👉 Lista de ítems (mockeada)
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: const [
-                  ItemPostList(
-                    title: "Portal de los Rosales",
-                    rating: 4.95,
-                    price: "\$700’000 /month",
-                    imageUrl: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd",
-                  ),
-                  SizedBox(height: 12),
-                  ItemPostList(
-                    title: "Parque Central Bavaria",
-                    rating: 4.75,
-                    price: "\$850’000 /month",
-                    imageUrl: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd",
-                  ),
-                  SizedBox(height: 12),
-                  ItemPostList(
-                    title: "La Candelaria Colonial",
-                    rating: 4.88,
-                    price: "\$1’200’000 /month",
-                    imageUrl: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd",
-                  ),
-                ],
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: MapSectionWidget(),
               ),
-            ),
-          ],
+              Expanded(
+                child: HousingListWidget(),
+              ),
+            ],
+          ),
         ),
-      ),
-
-      bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: 3,
-        onTap: (index) {
-          debugPrint("Navegaste al índice $index");
-        },
+        bottomNavigationBar: CustomBottomNavBar(
+          currentIndex: 3,
+          onTap: (index) {
+            debugPrint("Navigating to index $index");
+          },
+        ),
       ),
     );
   }
 }
-

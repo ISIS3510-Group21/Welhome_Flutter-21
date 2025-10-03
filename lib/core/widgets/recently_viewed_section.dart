@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../constants/app_text_styles.dart';
 import 'recently_viewed_item.dart';
 
 class RecentlyViewedSection extends StatelessWidget {

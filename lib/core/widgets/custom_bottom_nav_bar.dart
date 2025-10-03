@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:welhome/features/home/presentation/pages/home_page.dart';
+import 'package:welhome/features/map_search/presentation/widgets/map_search_provider.dart';
 import 'package:welhome/features/map_search/presentation/pages/map_search_page.dart';
 import 'package:welhome/features/filter/presentation/pages/filter_page.dart';
 import 'package:welhome/features/saved/presentation/pages/saved_page.dart';
@@ -22,28 +23,46 @@ class CustomBottomNavBar extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       currentIndex: currentIndex,
       onTap: (index) {
-        if (index == 0 ) {
+        // Llama primero al callback original
+        onTap(index);
+        
+        // Navegación simple sin remover páginas
+        if (index == 0) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const HomePage()),
           );
         }
-        if (index == 1 ) {
+        if (index == 1) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const SavedPage()),
           );
         }
-        if (index == 2 ) {
+        if (index == 2) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const FilterPage()),
           );
         }
-        if (index == 3 ) {
+        if (index == 3) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const MapSearchPage()),
+            MaterialPageRoute(builder: (context) => MapSearchProvider(
+              child: const MapSearchPage(),
+            )),
+          );
+        }
+        if (index == 4) {
+          // Página de perfil temporal
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Scaffold(
+              appBar: AppBar(title: const Text('Perfil')),
+              body: const Center(
+                child: Text('Página de Perfil - En desarrollo'),
+              ),
+            )),
           );
         }
       },

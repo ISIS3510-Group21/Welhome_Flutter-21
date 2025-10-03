@@ -1,16 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'tag_housing_post.dart';
 import 'amenities.dart';
+import 'dart:math';
 
 class HousingPost {
   final String id;
   final Timestamp creationDate;
   final Timestamp updateAt;
   final Timestamp closureDate;
+  final Timestamp statusChange;
   final String address;
   final double price;
   final double rating;
   final String title;
+  final String status; 
   final String description;
   final Location location;
   final String thumbnail;
@@ -27,9 +30,11 @@ class HousingPost {
     Timestamp? creationDate,
     Timestamp? updateAt,
     Timestamp? closureDate,
+    Timestamp? statusChange,
     this.address = "",
     this.price = 0.0,
     this.rating = 0.0,
+    this.status = "available",
     this.title = "No title",
     this.description = "",
     Location? location,
@@ -45,6 +50,7 @@ class HousingPost {
   })  : creationDate = creationDate ?? Timestamp.now(),
         updateAt = updateAt ?? Timestamp.now(),
         closureDate = closureDate ?? Timestamp.now(),
+        statusChange = statusChange ?? Timestamp.now(),
         location = location ?? Location(),
         roommateProfile = roommateProfile ?? RoommateProfile();
 
@@ -54,9 +60,11 @@ class HousingPost {
       creationDate: data['creationDate'] ?? Timestamp.now(),
       updateAt: data['updateAt'] ?? Timestamp.now(),
       closureDate: data['closureDate'] ?? Timestamp.now(),
+      statusChange: data['statusChange'] ?? Timestamp.now(),
       address: data['address'] ?? "",
       price: (data['price'] ?? 0).toDouble(),
       rating: (data['rating'] ?? 0).toDouble(),
+      status: data['status'] ?? "available",
       title: data['title'] ?? "No title",
       description: data['description'] ?? "",
       location: data['location'] != null
@@ -90,9 +98,11 @@ class HousingPost {
       'creationDate': creationDate,
       'updateAt': updateAt,
       'closureDate': closureDate,
+      'statusChange': statusChange,
       'address': address,
       'price': price,
       'rating': rating,
+      'status': status,
       'title': title,
       'description': description,
       'location': location.toMap(),
@@ -178,5 +188,77 @@ class Picture {
       'PhotoPath': photoPath,
       'name': name,
     };
+  }
+}
+
+class HousingPostWithDistance extends HousingPost {
+  final double distanceInKm;
+
+  HousingPostWithDistance({
+    required HousingPost housingPost,
+    required this.distanceInKm,
+  }) : super(
+          id: housingPost.id,
+          creationDate: housingPost.creationDate,
+          updateAt: housingPost.updateAt,
+          closureDate: housingPost.closureDate,
+          statusChange: housingPost.statusChange,
+          address: housingPost.address,
+          price: housingPost.price,
+          rating: housingPost.rating,
+          status: housingPost.status,
+          title: housingPost.title,
+          description: housingPost.description,
+          location: housingPost.location,
+          thumbnail: housingPost.thumbnail,
+          host: housingPost.host,
+          reviews: housingPost.reviews,
+          bookingDates: housingPost.bookingDates,
+          pictures: housingPost.pictures,
+          tag: housingPost.tag,
+          amenities: housingPost.amenities,
+          roommateProfile: housingPost.roommateProfile,
+        );
+
+  factory HousingPostWithDistance.fromHousingPost(
+    HousingPost housingPost,
+    double userLat,
+    double userLng,
+  ) {
+    final distanceInKm = _calculateDistance(
+      userLat,
+      userLng,
+      housingPost.location.lat,
+      housingPost.location.lng,
+    );
+
+    return HousingPostWithDistance(
+      housingPost: housingPost,
+      distanceInKm: distanceInKm,
+    );
+  }
+
+  static double _calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+    const int earthRadius = 6371; // Radio de la Tierra en kilómetros
+
+    double lat1Rad = lat1 * pi / 180;
+    double lat2Rad = lat2 * pi / 180;
+    double deltaLatRad = (lat2 - lat1) * pi / 180;
+    double deltaLngRad = (lng2 - lng1) * pi / 180;
+
+    double a = sin(deltaLatRad / 2) * sin(deltaLatRad / 2) +
+        cos(lat1Rad) * cos(lat2Rad) *
+            sin(deltaLngRad / 2) * sin(deltaLngRad / 2);
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    return earthRadius * c;
+  }
+
+  String get formattedDistance {
+    if (distanceInKm < 1) {
+      return '${(distanceInKm * 1000).toStringAsFixed(0)} m';
+    } else {
+      return '${distanceInKm.toStringAsFixed(1)} km';
+    }
   }
 }
