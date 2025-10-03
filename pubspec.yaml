@@ -43,10 +43,11 @@ dependencies:
   flutter_bloc: ^9.1.1
   google_maps_flutter: ^2.9.0
   geolocator: ^13.0.3
+  equatable: ^2.0.5
 
 dependency_overrides:
   geolocator_android: 4.6.1
-  
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

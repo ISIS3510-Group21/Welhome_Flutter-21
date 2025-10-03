@@ -7,6 +7,7 @@ class ItemPostList extends StatelessWidget {
   final String? imageUrl;
   final double rating;
   final String price;
+  final String? subtitle;
   final bool useColorPlaceholder;
 
   const ItemPostList({
@@ -15,6 +16,7 @@ class ItemPostList extends StatelessWidget {
     this.imageUrl,
     required this.rating,
     required this.price,
+    this.subtitle,
     this.useColorPlaceholder = false,
   });
 
@@ -22,7 +24,7 @@ class ItemPostList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 121,
+      height: 126,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -75,6 +77,16 @@ class ItemPostList extends StatelessWidget {
                   price,
                   style: AppTextStyles.textRegular,
                 ),
+
+                if (subtitle != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle!,
+                    style: AppTextStyles.textSmall.copyWith(
+                      color: AppColors.coolGray,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
