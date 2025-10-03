@@ -2,6 +2,8 @@ import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:welhome/core/constants/app_colors.dart';
+import 'package:welhome/core/constants/app_text_styles.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -92,7 +94,10 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Sign In")),
+      appBar: AppBar(
+        title: const Text("Sign In"),
+        titleTextStyle: AppTextStyles.tittleMedium,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -101,23 +106,27 @@ class _RegisterPageState extends State<RegisterPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Nombre
-              const Text("Name",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("Name", style: AppTextStyles.tittleSmall),
               const SizedBox(height: 6),
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
                   hintText: "Enter your name",
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(
+                        color: AppColors.violetBlue,
+                        width: 2,
+                      )),
+                  filled: true,
+                  fillColor: AppColors.lavenderLight,
                 ),
                 validator: (value) => value!.isEmpty ? "Enter your name" : null,
               ),
               const SizedBox(height: 16),
 
               // Email
-              const Text("Email",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("Email", style: AppTextStyles.tittleSmall),
               const SizedBox(height: 6),
               TextFormField(
                 controller: _emailController,
@@ -125,6 +134,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   hintText: "Enter your email",
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.lavenderLight,
                 ),
                 validator: (value) =>
                     value!.isEmpty ? "Enter a valid email" : null,
@@ -132,8 +143,7 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: 16),
 
               // Contraseña
-              const Text("Password",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("Password", style: AppTextStyles.tittleSmall),
               const SizedBox(height: 6),
               TextFormField(
                 controller: _passwordController,
@@ -142,6 +152,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   hintText: "Enter your password",
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.lavenderLight,
                 ),
                 validator: (value) =>
                     value!.length < 6 ? "At least 6 characters" : null,
@@ -149,8 +161,7 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: 16),
 
               // Fecha de nacimiento
-              const Text("Birth Date",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("Birth Date", style: AppTextStyles.tittleSmall),
               const SizedBox(height: 6),
               Row(
                 children: [
@@ -161,6 +172,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         hintText: "Day",
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8)),
+                        filled: true,
+                        fillColor: AppColors.lavenderLight,
                       ),
                       items: List.generate(
                         31,
@@ -179,6 +192,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         hintText: "Month",
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8)),
+                        filled: true,
+                        fillColor: AppColors.lavenderLight,
                       ),
                       items: List.generate(
                         12,
@@ -197,6 +212,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         hintText: "Year",
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8)),
+                        filled: true,
+                        fillColor: AppColors.lavenderLight,
                       ),
                       items: List.generate(
                         100,
@@ -215,8 +232,7 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: 16),
 
               // Teléfono
-              const Text("Phone number",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("Phone number", style: AppTextStyles.tittleSmall),
               const SizedBox(height: 6),
               Row(
                 children: [
@@ -240,6 +256,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey),
                           borderRadius: BorderRadius.circular(8),
+                          color: AppColors.lavenderLight,
                         ),
                         child: Text(
                           _phonePrefix ?? "Prefix",
@@ -258,6 +275,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         hintText: "Number",
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8)),
+                        filled: true,
+                        fillColor: AppColors.lavenderLight,
                       ),
                       validator: (value) =>
                           value!.isEmpty ? "Enter number" : null,
@@ -268,8 +287,7 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: 16),
 
               // Género
-              const Text("Gender",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("Gender", style: AppTextStyles.tittleSmall),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
                 value: _gender,
@@ -277,6 +295,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   hintText: "Choose a gender",
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: AppColors.lavenderLight,
                 ),
                 items: ["Male", "Female", "Other/Prefer not to say"]
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
@@ -287,8 +307,7 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: 16),
 
               // Nacionalidad
-              const Text("Nationality",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("Nationality", style: AppTextStyles.tittleSmall),
               const SizedBox(height: 6),
               InkWell(
                 onTap: () {
@@ -303,6 +322,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        filled: true,
+                        fillColor: AppColors.lavenderLight,
                       ),
                     ),
                     onSelect: (Country country) {
@@ -316,8 +337,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
+                    border: Border.all(color: AppColors.violetBlue),
                     borderRadius: BorderRadius.circular(8),
+                    color: AppColors.lavenderLight,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -335,8 +357,7 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: 16),
 
               // Lenguaje
-              const Text("Preferred Language",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("Preferred Language", style: AppTextStyles.tittleSmall),
               const SizedBox(height: 6),
 
               DropdownButtonFormField<String>(
@@ -344,7 +365,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 decoration: InputDecoration(
                   hintText: "Prefered Language",
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide:
+                          const BorderSide(color: AppColors.violetBlue)),
+                  filled: true,
+                  fillColor: AppColors.lavenderLight,
                 ),
                 items: [
                   {"code": "es", "name": "Español", "flag": "🇨🇴"},
@@ -372,8 +397,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               const SizedBox(height: 16),
               // Tipo de usuario
-              const Text("Tipo de usuario",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("Tipo de usuario", style: AppTextStyles.tittleSmall),
               Column(
                 children: [
                   RadioListTile(
@@ -397,7 +421,15 @@ class _RegisterPageState extends State<RegisterPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _register,
-                  child: const Text("Guardar usuario"),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: AppColors.violetBlue,
+                    foregroundColor: AppColors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text("Save user", style: AppTextStyles.buttons),
                 ),
               ),
             ],
