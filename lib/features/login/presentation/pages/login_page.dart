@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:welhome/core/constants/app_colors.dart';
 import 'package:welhome/core/constants/app_text_styles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:welhome/features/register/presentation/pages/register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -186,8 +187,7 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () {
-                      // Aquí navegas a tu pantalla de registro
-                      // Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterPage()));
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterPage()));
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
