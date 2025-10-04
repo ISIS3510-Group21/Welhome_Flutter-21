@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:welhome/core/constants/app_text_styles.dart';
 
@@ -19,28 +20,37 @@ class HousingDetailHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> fallbackAssets = [
+      'lib/assets/images/fallback1.jpg',
+      'lib/assets/images/fallback2.jpg',
+    ];
+    final Random random = Random();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Carrusel
         SizedBox(
           height: 212,
           width: double.infinity,
           child: PageView.builder(
             itemCount: imageUrls.length,
             itemBuilder: (context, index) {
-              return Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage(imageUrls[index]),
+              return Image.network(
+                imageUrls[index],
+                fit: BoxFit.cover,
+                width: double.infinity,
+                errorBuilder: (context, error, stackTrace) {
+                  final fallback = fallbackAssets[random.nextInt(fallbackAssets.length)];
+                  return Image.asset(
+                    fallback,
                     fit: BoxFit.cover,
-                  ),
-                ),
+                    width: double.infinity,
+                  );
+                },
               );
             },
           ),
         ),
-
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -76,7 +86,7 @@ class HousingDetailHeader extends StatelessWidget {
         ),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.only(left: 16, right: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             title,
             style: AppTextStyles.tittleMedium.copyWith(
@@ -86,7 +96,7 @@ class HousingDetailHeader extends StatelessWidget {
         ),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.only(left: 16, right: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             '\$$price /month',
             style: AppTextStyles.textRegular,

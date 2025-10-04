@@ -1,13 +1,29 @@
 import 'package:flutter/material.dart'; 
 import 'package:welhome/core/constants/app_text_styles.dart';
 import 'package:welhome/core/data/models/ammenities.dart';
+import 'dart:math';
 
 class HousingDetailAmenities extends StatelessWidget {
   final List<Ammenities> amenities;
 
-  const HousingDetailAmenities({super.key, required this.amenities});
+  HousingDetailAmenities({super.key, required this.amenities});
+
+  // Lista de íconos posibles
+  static const List<IconData> amenityIcons = [
+    Icons.home_outlined,
+    Icons.local_florist_outlined,
+    Icons.fitness_center_outlined,
+    Icons.bed_outlined,
+    Icons.bathtub_outlined,
+    Icons.chair_outlined,
+    Icons.kitchen_outlined,
+  ];
+
+  final Random _random = Random();
 
   Widget _buildAmenityCard(String label) {
+    final icon = amenityIcons[_random.nextInt(amenityIcons.length)];
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
@@ -19,17 +35,18 @@ class HousingDetailAmenities extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          // Placeholder para ícono
-          Container(width: 24, height: 24, color: Colors.grey[300]),
+          Icon(icon, size: 24, color: Colors.black),
           const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF191716),
-              fontSize: 13,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.20,
+          Flexible(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF191716),
+                fontSize: 13,
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.20,
+              ),
             ),
           ),
         ],
@@ -39,28 +56,18 @@ class HousingDetailAmenities extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (amenities.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    if (amenities.isEmpty) return const SizedBox.shrink();
 
-    final displayedAmenities = amenities.length > 4 ? amenities.sublist(0, 4) : amenities;
+    final displayedAmenities =
+        amenities.length > 4 ? amenities.sublist(0, 4) : amenities;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Título
-          SizedBox(
-            width: double.infinity,
-            child: Text(
-              'Amenities',
-              style: AppTextStyles.tittleMedium,
-            ),
-          ),
-
+          Text('Amenities', style: AppTextStyles.tittleMedium),
           const SizedBox(height: 12),
-
           LayoutBuilder(
             builder: (context, constraints) {
               final cardWidth = (constraints.maxWidth - 8) / 2;
@@ -76,7 +83,6 @@ class HousingDetailAmenities extends StatelessWidget {
               );
             },
           ),
-
           const SizedBox(height: 12),
           Container(
             width: double.infinity,

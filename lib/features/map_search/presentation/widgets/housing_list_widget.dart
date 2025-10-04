@@ -174,7 +174,6 @@ class _HousingListWidgetState extends State<HousingListWidget> {
       );
     }
 
-    // Initial state
     return const LoadingStateWidget(message: "Starting search...");
   }
 
@@ -199,10 +198,8 @@ class _HousingListWidgetState extends State<HousingListWidget> {
                   ? "${post.formattedDistance} away"
                   : null,
               onTap: () {
-                // 🔹 Marcamos el post como seleccionado en el cubit
                 context.read<MapSearchCubit>().selectPost(post.id);
 
-                // 🔹 Navegamos al detalle (más adelante puedes usar go_router o AutoRoute)
                 Navigator.push(
                   context,
                   MaterialPageRoute(

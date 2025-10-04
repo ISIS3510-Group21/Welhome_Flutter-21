@@ -3,9 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:welhome/core/constants/app_colors.dart';
 import 'package:welhome/core/data/repositories/housing_repository.dart';
 import 'package:welhome/core/widgets/custom_divider.dart';
+import 'package:welhome/core/widgets/generic_bottom_button.dart';
 import 'package:welhome/features/postDetail/presentation/cubit/housing_detail_cubit.dart';
 import 'package:welhome/features/postDetail/presentation/widgets/housing_detail_amenities.dart';
 import 'package:welhome/features/postDetail/presentation/widgets/housing_detail_header.dart';
+import 'package:welhome/features/postDetail/presentation/widgets/housing_detail_host.dart';
+import 'package:welhome/features/postDetail/presentation/widgets/housing_detail_location_map.dart';
 import 'package:welhome/features/postDetail/presentation/widgets/housing_detail_roomates.dart';
 
 class HousingDetailPage extends StatefulWidget {
@@ -38,9 +41,9 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
     return BlocProvider.value(
       value: _cubit,
       child: Scaffold(
-        backgroundColor: AppColors.white,
         appBar: AppBar(
-          title: const Text("Housing Detail"),
+          title: const SizedBox.shrink(),
+          elevation: 0,
         ),
         body: BlocBuilder<HousingDetailCubit, HousingDetailState>(
           builder: (context, state) {
@@ -49,7 +52,8 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
             } else if (state is HousingDetailLoaded) {
               final post = state.post;
 
-              return SingleChildScrollView(
+              return SafeArea (
+                child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -69,11 +73,21 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
                         alignment: Alignment.center,
                         child: const Text("No images available"),
                       ),
-                      CustomDivider(),
+                      const CustomDivider(),
                       HousingDetailAmenities(amenities: post.ammenities),
                       HousingDetailRoommates(roommates: post.roomateProfile),
+                      HousingDetailHost(hostName: post.host),
+                      HousingDetailLocationMap(location: post.location, address: post.address,),
+                      const CustomDivider(),
+                      GenericBottomButton(
+                        text: 'Book Visit',
+                        onPressed: () {
+                          debugPrint('Book Visit pressed');
+                        },
+                      )
                   ],
                 ),
+              )
               );
             } else if (state is HousingDetailError) {
               return Center(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:welhome/core/constants/app_text_styles.dart';
 import 'package:welhome/core/data/models/housing_post.dart';
+import 'dart:math';
 
 class HousingDetailRoommates extends StatelessWidget {
   final List<RoomateProfile> roommates;
@@ -12,6 +13,14 @@ class HousingDetailRoommates extends StatelessWidget {
     if (roommates.isEmpty) {
       return const SizedBox.shrink();
     }
+
+    final List<String> assetImages = [
+      'lib/assets/images/roommate1.png',
+      'lib/assets/images/roommate2.png',
+      'lib/assets/images/roommate3.png',
+    ];
+
+    final Random random = Random();
 
     return Container(
       width: double.infinity,
@@ -34,15 +43,12 @@ class HousingDetailRoommates extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
                 final roommate = roommates[index];
+                final String imagePath = assetImages[random.nextInt(assetImages.length)];
 
                 return CircleAvatar(
                   radius: 35,
                   backgroundColor: const Color(0xFFEFF1F5),
-                  backgroundImage: NetworkImage(
-                    roommate.studentUserID.isNotEmpty
-                        ? "https://placehold.co/70x70" 
-                        : "https://placehold.co/70x70",
-                  ),
+                  backgroundImage: AssetImage(imagePath),
                 );
               },
             ),
