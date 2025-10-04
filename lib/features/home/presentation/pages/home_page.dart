@@ -1,114 +1,150 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:welhome/core/constants/app_colors.dart';
+import 'package:welhome/core/data/repositories/housing_repository.dart';
+import 'package:welhome/core/data/repositories/student_user_profile_repository.dart';
+import 'package:welhome/core/data/services/student_user_profile_housing_service.dart';
 import 'package:welhome/core/widgets/app_search_bar.dart';
 import 'package:welhome/core/widgets/custom_bottom_nav_bar.dart';
-import 'package:welhome/core/constants/app_colors.dart';
-import 'package:welhome/core/widgets/recommended_rail_horizontal.dart';
 import 'package:welhome/core/widgets/recently_viewed_section.dart';
+import 'package:welhome/core/widgets/recommended_rail_horizontal.dart';
+import 'package:welhome/features/home/presentation/cubit/home_cubit.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final String userId;
+
+  const HomePage({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      body: SafeArea(
-        child: SingleChildScrollView( // 🔹 Scroll en toda la página
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: AppSearchBar(),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Recommended for you',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
+    final housingService = StudentUserProfileHousingService(
+      studentUserProfileRepo: StudentUserProfileRepository(),
+      housingRepo: HousingRepository(),
+    );
+
+    return BlocProvider(
+      create: (_) => HomeCubit(housingService: housingService, userId: userId)
+        ..loadHomeData(),
+      child: Scaffold(
+        backgroundColor: AppColors.white,
+        body: SafeArea(
+          child: BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) {
+              if (state is HomeLoading || state is HomeInitial) {
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: AppSearchBar(),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.notifications_none, size: 28),
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 285,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: products.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 16),
-                  itemBuilder: (context, index) {
-                    final product = products[index];
-                    return ProductCard(
-                      imageUrl: product['imageUrl'] as String,
-                      title: product['title'] as String,
-                      rating: product['rating'] as double,
-                      reviews: product['reviews'] as int,
-                      price: product['price'] as String,
-                      onTap: () {},
-                    );
-                  },
-                ),
-              ),
-              RecentlyViewedSection(
-                recentItems: recentlyViewedProducts,
-              ),
-            ],
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              width: 180,
+                              height: 24,
+                              color: Colors.grey[300],
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.notifications_none, size: 28),
+                              onPressed: () {},
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 285,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: 3, // número de placeholders
+                          separatorBuilder: (_, __) => const SizedBox(width: 16),
+                          itemBuilder: (context, index) {
+                            return Container(
+                              width: 280,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Placeholder para recently viewed
+                      SizedBox(
+                        height: 250,
+                        child: ListView.builder(
+                          itemCount: 2,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemBuilder: (context, index) {
+                            return Container(
+                              height: 200,
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              } else if (state is HomeError) {
+                return Center(child: Text("Error: ${state.message}"));
+              } else if (state is HomeLoaded) {
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: AppSearchBar(),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Recommended for you',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.notifications_none, size: 28),
+                              onPressed: () {},
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      RecommendedRailHorizontal(posts: state.recommendedPosts),
+                      RecentlyViewedSection(posts: state.recentlyViewedPosts),
+                    ],
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
           ),
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: 0,
-        onTap: (index) {
-          debugPrint("Navegaste al índice $index");
-        },
+        bottomNavigationBar: CustomBottomNavBar(
+          currentIndex: 0,
+          onTap: (index) => debugPrint("Navegaste al índice $index"),
+        ),
       ),
     );
   }
 }
-
-// Ejemplo de productos
-final products = [
-  {
-    'imageUrl': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-    'title': 'Portal de los Rosales',
-    'rating': 4.95,
-    'reviews': 22,
-    'price': '\$700\'000',
-  },
-  {
-    'imageUrl': 'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd',
-    'title': 'Living 72',
-    'rating': 4.95,
-    'reviews': 25,
-    'price': '\$700\'000',
-  },
-];
-
-final recentlyViewedProducts = [
-  {
-    'imageUrl': 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750',
-    'title': 'Living 72',
-    'rating': 4.95,
-    'reviews': 25,
-    'price': '\$700\'000',
-  },
-  {
-    'imageUrl': 'https://images.unsplash.com/photo-1513584684374-8bab748fbf90',
-    'title': 'Portal de los Rosales',
-    'rating': 4.95,
-    'reviews': 22,
-    'price': '\$700\'000',
-  },
-];

@@ -6,6 +6,7 @@ import 'package:welhome/core/widgets/custom_bottom_nav_bar.dart';
 import 'package:welhome/core/constants/app_colors.dart';
 import 'package:welhome/core/widgets/category_card.dart';
 import 'package:welhome/core/widgets/filter_chip_custom.dart';
+import 'package:welhome/core/widgets/product_card.dart';
 import 'package:welhome/core/widgets/recommended_rail_horizontal.dart';
 import 'package:welhome/features/filter/data/services/property_service.dart';
 import 'package:welhome/features/filter/domain/models/property.dart';

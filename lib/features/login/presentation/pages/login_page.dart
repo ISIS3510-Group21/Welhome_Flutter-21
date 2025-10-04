@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:welhome/core/constants/app_colors.dart';
 import 'package:welhome/core/constants/app_text_styles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:welhome/features/home/presentation/pages/home_page.dart';
 import 'package:welhome/features/register/presentation/pages/register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -39,8 +40,7 @@ class _LoginPageState extends State<LoginPage> {
           SnackBar(content: Text("Bienvenido ${credential.user?.email}")),
         );
 
-        // Aquí puedes navegar a tu HomePage
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage(userId: 'StudentUserProfile10',)));
 
       } on FirebaseAuthException catch (e) {
         String message;
