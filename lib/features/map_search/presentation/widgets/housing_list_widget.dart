@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:welhome/core/widgets/item_post_list.dart';
@@ -178,41 +180,50 @@ class _HousingListWidgetState extends State<HousingListWidget> {
   }
 
     Widget _buildPostsList(List<HousingPostWithDistance> posts) {
-    return ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: posts.length,
-      itemBuilder: (context, index) {
-        final post = posts[index];
-        final key = _itemKeys.putIfAbsent(post.id, () => GlobalKey());
+  final random = Random();
+  final defaultPlaceholders = [
+    'lib/assets/images/fallback1.jpg',
+    'lib/assets/images/fallback2.jpg',
+  ];
 
-        return Column(
-          key: key,
-          children: [
-            ItemPostList(
-              title: post.title,
-              rating: post.rating,
-              price: "\$${post.price.toInt()} /month",
-              imageUrl: post.thumbnail,
-              subtitle: post.formattedDistance != null
-                  ? "${post.formattedDistance} away"
-                  : null,
-              onTap: () {
-                context.read<MapSearchCubit>().selectPost(post.id);
+  return ListView.builder(
+    controller: _scrollController,
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    itemCount: posts.length,
+    itemBuilder: (context, index) {
+      final post = posts[index];
+      final key = _itemKeys.putIfAbsent(post.id, () => GlobalKey());
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => HousingDetailPage(postId: post.id),
-                  ),
-                );
-              },
-            ),
-            if (index < posts.length - 1)
-              const SizedBox(height: 12),
-          ],
-        );
-      },
-    );
-  }
+      final hasNetworkImage = post.thumbnail != null && post.thumbnail!.isNotEmpty;
+      final placeholderAsset = defaultPlaceholders[random.nextInt(defaultPlaceholders.length)];
+
+      return Column(
+        key: key,
+        children: [
+          ItemPostList(
+            title: post.title,
+            rating: post.rating,
+            price: "\$${post.price.toInt()} /month",
+            imageUrl: hasNetworkImage ? post.thumbnail! : null,
+            placeholderAsset: placeholderAsset,
+            subtitle: post.formattedDistance != null
+                ? "${post.formattedDistance} away"
+                : null,
+            onTap: () {
+              context.read<MapSearchCubit>().selectPost(post.id);
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HousingDetailPage(postId: post.id),
+                ),
+              );
+            },
+          ),
+          if (index < posts.length - 1) const SizedBox(height: 12),
+        ],
+      );
+    },
+  );
+}
 }

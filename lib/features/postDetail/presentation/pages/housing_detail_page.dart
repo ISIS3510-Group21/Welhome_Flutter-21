@@ -97,7 +97,7 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
                 child: Text("Error: ${state.message}"),
               );
             }
-            return const SizedBox.shrink(); // estado inicial vacío
+            return const SizedBox.shrink();
           },
         ),
       ),
