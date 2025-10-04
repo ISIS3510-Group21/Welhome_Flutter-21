@@ -48,6 +48,8 @@ dependencies:
   google_maps_flutter: ^2.9.0
   geolocator: ^13.0.3
   equatable: ^2.0.5
+  firebase_storage: ^13.0.2
+  image_picker: ^0.8.7+5
 
 dependency_overrides:
   geolocator_android: 4.6.1
