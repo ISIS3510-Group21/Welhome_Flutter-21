@@ -54,38 +54,41 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
 
               return SafeArea (
                 child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Carrusel dinámico
-                    if (post.pictures.isNotEmpty)
-                      HousingDetailHeader(
-                        imageUrls:
-                            post.pictures.map((pic) => pic.photoPath).toList(),
-                            rating: post.rating,
-                            reviewsCount: 4,
-                            title: post.title,
-                            price: post.price,
-                      )
-                    else
-                      Container(
-                        height: 212,
-                        alignment: Alignment.center,
-                        child: const Text("No images available"),
-                      ),
-                      const CustomDivider(),
-                      HousingDetailAmenities(amenities: post.ammenities),
-                      HousingDetailRoommates(roommates: post.roomateProfile),
-                      HousingDetailHost(hostName: post.host),
-                      HousingDetailLocationMap(location: post.location, address: post.address,),
-                      const CustomDivider(),
-                      GenericBottomButton(
-                        text: 'Book Visit',
-                        onPressed: () {
-                          debugPrint('Book Visit pressed');
-                        },
-                      )
-                  ],
+                child: Container(
+                  color: AppColors.white,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Carrusel dinámico
+                      if (post.pictures.isNotEmpty)
+                        HousingDetailHeader(
+                          imageUrls:
+                              post.pictures.map((pic) => pic.photoPath).toList(),
+                              rating: post.rating,
+                              reviewsCount: 4,
+                              title: post.title,
+                              price: post.price,
+                        )
+                      else
+                        Container(
+                          height: 212,
+                          alignment: Alignment.center,
+                          child: const Text("No images available"),
+                        ),
+                        const CustomDivider(),
+                        HousingDetailAmenities(amenities: post.ammenities),
+                        HousingDetailRoommates(roommates: post.roomateProfile),
+                        HousingDetailHost(hostName: post.host),
+                        HousingDetailLocationMap(location: post.location, address: post.address,),
+                        const CustomDivider(),
+                        GenericBottomButton(
+                          text: 'Book Visit',
+                          onPressed: () {
+                            debugPrint('Book Visit pressed');
+                          },
+                        )
+                    ],
+                  ),
                 ),
               )
               );
