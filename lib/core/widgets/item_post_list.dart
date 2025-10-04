@@ -5,25 +5,32 @@ import 'package:welhome/core/constants/app_text_styles.dart';
 class ItemPostList extends StatelessWidget {
   final String title;
   final String? imageUrl;
+  final String? placeholderAsset; // NUEVO
   final double rating;
   final String price;
   final String? subtitle;
-  final bool useColorPlaceholder;
   final VoidCallback? onTap;
 
   const ItemPostList({
     super.key,
     required this.title,
     this.imageUrl,
+    this.placeholderAsset,
     required this.rating,
     required this.price,
     this.subtitle,
-    this.useColorPlaceholder = false,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasNetworkImage = imageUrl != null && imageUrl!.isNotEmpty;
+    final imageProvider = hasNetworkImage
+        ? NetworkImage(imageUrl!)
+        : (placeholderAsset != null
+            ? AssetImage(placeholderAsset!)
+            : AssetImage('assets/images/fallback1.jpg')) as ImageProvider;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -34,18 +41,16 @@ class ItemPostList extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Imagen
             Container(
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: useColorPlaceholder ? AppColors.coolGray : null,
                 borderRadius: BorderRadius.circular(12),
-                image: (!useColorPlaceholder && imageUrl != null)
-                    ? DecorationImage(
-                        image: NetworkImage(imageUrl!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
+                image: DecorationImage(
+                  image: imageProvider,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
 
@@ -63,9 +68,7 @@ class ItemPostList extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.tittleMedium,
                   ),
-
                   const SizedBox(height: 4),
-
                   Row(
                     children: [
                       const Icon(Icons.star, color: AppColors.black, size: 20),
@@ -76,14 +79,11 @@ class ItemPostList extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 4),
-
                   Text(
                     price,
                     style: AppTextStyles.textRegular,
                   ),
-
                   if (subtitle != null) ...[
                     const SizedBox(height: 4),
                     Text(
