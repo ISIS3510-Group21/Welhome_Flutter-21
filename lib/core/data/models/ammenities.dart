@@ -1,16 +1,16 @@
-class Amenities {
+class Ammenities {
   final String id;
   final String name;
   final String iconPath;
 
-  Amenities({
+  Ammenities({
     this.id = '',
     this.name = '',
     this.iconPath = '',
   });
 
-  factory Amenities.fromMap(Map<String, dynamic> data, {String? documentId}) {
-    return Amenities(
+  factory Ammenities.fromMap(Map<String, dynamic> data, {String? documentId}) {
+    return Ammenities(
       id: documentId ?? data['id'] ?? '',
       name: data['name'] ?? '',
       iconPath: data['iconPath'] ?? '',

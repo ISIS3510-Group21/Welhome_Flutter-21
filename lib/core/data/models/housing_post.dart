@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'tag_housing_post.dart';
-import 'amenities.dart';
+import 'ammenities.dart';
 import 'dart:math';
 
 class HousingPost {
@@ -22,8 +22,8 @@ class HousingPost {
   final String bookingDates;
   final List<Picture> pictures;
   final List<TagHousingPost> tag;
-  final List<Amenities> amenities;
-  final RoommateProfile roommateProfile;
+  final List<Ammenities> ammenities;
+  final List<RoomateProfile> roomateProfile;
 
   HousingPost({
     this.id = "",
@@ -45,14 +45,13 @@ class HousingPost {
     this.bookingDates = "",
     this.pictures = const [],
     this.tag = const [],
-    this.amenities = const [],
-    RoommateProfile? roommateProfile,
+    this.ammenities = const [],
+    this.roomateProfile = const [],
   })  : creationDate = creationDate ?? Timestamp.now(),
         updateAt = updateAt ?? Timestamp.now(),
         closureDate = closureDate ?? Timestamp.now(),
         statusChange = statusChange ?? Timestamp.now(),
-        location = location ?? Location(),
-        roommateProfile = roommateProfile ?? RoommateProfile();
+        location = location ?? Location();
 
   factory HousingPost.fromMap(Map<String, dynamic> data, {String? documentId}) {
     return HousingPost(
@@ -78,19 +77,68 @@ class HousingPost {
               ?.map((e) => Picture.fromMap(e))
               .toList() ??
           [],
-      tag: (data['Tag'] as List<dynamic>?)
+      tag: (data['tags'] as List<dynamic>?)
               ?.map((e) => TagHousingPost.fromMap(e))
               .toList() ??
           [],
-      amenities: (data['Ammenities'] as List<dynamic>?)
-              ?.map((e) => Amenities.fromMap(e))
+      ammenities: (data['amenities'] as List<dynamic>?)
+              ?.map((e) => Ammenities.fromMap(e))
               .toList() ??
           [],
-      roommateProfile: data['RoomateProfile'] != null
-          ? RoommateProfile.fromMap(data['RoomateProfile'])
-          : RoommateProfile(),
+      roomateProfile: (data['roomateProfile'] as List<dynamic>?)
+            ?.map((e) => RoomateProfile.fromMap(e))
+            .toList() ??
+          [],
     );
   }
+
+  HousingPost copyWith({
+  String? id,
+  Timestamp? creationDate,
+  Timestamp? updateAt,
+  Timestamp? closureDate,
+  Timestamp? statusChange,
+  String? address,
+  double? price,
+  double? rating,
+  String? status,
+  String? title,
+  String? description,
+  Location? location,
+  String? thumbnail,
+  String? host,
+  String? reviews,
+  String? bookingDates,
+  List<Picture>? pictures,
+  List<TagHousingPost>? tag,
+  List<Ammenities>? ammenities,
+  List<RoomateProfile>? roomateProfile,
+}) {
+  return HousingPost(
+    id: id ?? this.id,
+    creationDate: creationDate ?? this.creationDate,
+    updateAt: updateAt ?? this.updateAt,
+    closureDate: closureDate ?? this.closureDate,
+    statusChange: statusChange ?? this.statusChange,
+    address: address ?? this.address,
+    price: price ?? this.price,
+    rating: rating ?? this.rating,
+    status: status ?? this.status,
+    title: title ?? this.title,
+    description: description ?? this.description,
+    location: location ?? this.location,
+    thumbnail: thumbnail ?? this.thumbnail,
+    host: host ?? this.host,
+    reviews: reviews ?? this.reviews,
+    bookingDates: bookingDates ?? this.bookingDates,
+    pictures: pictures ?? this.pictures,
+    tag: tag ?? this.tag,
+    ammenities: ammenities ?? this.ammenities,
+    roomateProfile: roomateProfile ?? this.roomateProfile,
+  );
+}
+
+  get images => null;
 
   Map<String, dynamic> toMap() {
     return {
@@ -110,10 +158,10 @@ class HousingPost {
       'host': host,
       'reviews': reviews,
       'bookingDates': bookingDates,
-      'Pictures': pictures.map((e) => e.toMap()).toList(),
-      'Tag': tag.map((e) => e.toMap()).toList(),
-      'Ammenities': amenities.map((e) => e.toMap()).toList(),
-      'RoomateProfile': roommateProfile.toMap(),
+      'pictures': pictures.map((e) => e.toMap()).toList(),
+      'tags': tag.map((e) => e.toMap()).toList(),
+      'amenities': ammenities.map((e) => e.toMap()).toList(),
+      'roomateProfile': roomateProfile.map((e) => e.toMap()).toList(),
     };
   }
 }
@@ -139,22 +187,22 @@ class Location {
   }
 }
 
-class RoommateProfile {
+class RoomateProfile {
   final String id;
   final String name;
   final String studentUserID;
 
-  RoommateProfile({
+  RoomateProfile({
     this.id = "",
     this.name = "",
     this.studentUserID = "",
   });
 
-  factory RoommateProfile.fromMap(Map<String, dynamic> data) {
-    return RoommateProfile(
+  factory RoomateProfile.fromMap(Map<String, dynamic> data) {
+    return RoomateProfile(
       id: data['id'] ?? "",
       name: data['name'] ?? "",
-      studentUserID: data['StudentUserID'] ?? "",
+      studentUserID: data['studentUserID'] ?? "",
     );
   }
 
@@ -162,7 +210,7 @@ class RoommateProfile {
     return {
       'id': id,
       'name': name,
-      'StudentUserID': studentUserID,
+      'studentUserID': studentUserID,
     };
   }
 }
@@ -178,14 +226,14 @@ class Picture {
 
   factory Picture.fromMap(Map<String, dynamic> data) {
     return Picture(
-      photoPath: data['PhotoPath'] ?? "",
+      photoPath: data['photoPath'] ?? "",
       name: data['name'] ?? "",
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'PhotoPath': photoPath,
+      'photoPath': photoPath,
       'name': name,
     };
   }
@@ -216,8 +264,8 @@ class HousingPostWithDistance extends HousingPost {
           bookingDates: housingPost.bookingDates,
           pictures: housingPost.pictures,
           tag: housingPost.tag,
-          amenities: housingPost.amenities,
-          roommateProfile: housingPost.roommateProfile,
+          ammenities: housingPost.ammenities,
+          roomateProfile: housingPost.roomateProfile,
         );
 
   factory HousingPostWithDistance.fromHousingPost(
@@ -261,4 +309,5 @@ class HousingPostWithDistance extends HousingPost {
       return '${distanceInKm.toStringAsFixed(1)} km';
     }
   }
+
 }
