@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:welhome/core/data/models/ammenities.dart';
 import 'package:welhome/core/data/models/housing_post.dart';
 
 class HousingRepository {
@@ -118,26 +119,60 @@ class HousingRepository {
   }
 
   Future<HousingPost?> getHousingPostById(String postId) async {
-    try {
-      final DocumentSnapshot doc = await _firestore
+  try {
+    final DocumentSnapshot doc = await _firestore
+        .collection(housingCollection)
+        .doc(postId)
+        .get();
+
+    if (doc.exists) {
+      final housingPost = HousingPost.fromMap(
+        doc.data() as Map<String, dynamic>,
+        documentId: doc.id,
+      );
+
+      // Traer subcollection Pictures
+      final picsSnapshot = await _firestore
           .collection(housingCollection)
           .doc(postId)
+          .collection('Pictures')
           .get();
 
-      if (doc.exists) {
-        return HousingPost.fromMap(
-          doc.data() as Map<String, dynamic>,
-          documentId: doc.id,
-        );
-      }
-      return null;
-    } on FirebaseException catch (e) {
-      throw HousingRepositoryException(
-        'Error getting housing post: ${e.message}',
-        errorCode: e.code,
-      );
+      final pictures = picsSnapshot.docs
+          .map((d) => Picture.fromMap(d.data()))
+          .toList();
+
+      final ammenSnapshot = await _firestore
+        .collection(housingCollection)
+        .doc(postId)
+        .collection('Ammenities')
+        .get();
+
+      final ammenities = ammenSnapshot.docs
+          .map((d) => Ammenities.fromMap(d.data(), documentId: d.id))
+          .toList();
+
+      final roomateSnapshot = await _firestore
+        .collection(housingCollection)
+        .doc(postId)
+        .collection('RoomateProfile')
+        .get();
+
+      final roomateProfile = roomateSnapshot.docs
+          .map((d) => RoomateProfile.fromMap(d.data()))
+          .toList();
+
+      return housingPost.copyWith(pictures: pictures, ammenities: ammenities, roomateProfile: roomateProfile);
     }
+    return null;
+  } on FirebaseException catch (e) {
+    throw HousingRepositoryException(
+      'Error getting housing post: ${e.message}',
+      errorCode: e.code,
+    );
   }
+}
+
 
   Future<String> createHousingPost(HousingPost post) async {
     try {

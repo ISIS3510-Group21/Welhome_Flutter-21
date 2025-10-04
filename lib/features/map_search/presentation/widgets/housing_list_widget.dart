@@ -6,6 +6,7 @@ import '../cubit/map_search_state.dart';
 import 'loading_state_widget.dart';
 import 'error_state_widget.dart';
 import 'package:welhome/core/data/models/housing_post.dart';
+import 'package:welhome/features/postDetail/presentation/pages/housing_detail_page.dart';
 
 class HousingListWidget extends StatefulWidget {
   const HousingListWidget({super.key});
@@ -173,11 +174,10 @@ class _HousingListWidgetState extends State<HousingListWidget> {
       );
     }
 
-    // Initial state
     return const LoadingStateWidget(message: "Starting search...");
   }
 
-  Widget _buildPostsList(List<HousingPostWithDistance> posts) {
+    Widget _buildPostsList(List<HousingPostWithDistance> posts) {
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -194,9 +194,21 @@ class _HousingListWidgetState extends State<HousingListWidget> {
               rating: post.rating,
               price: "\$${post.price.toInt()} /month",
               imageUrl: post.thumbnail,
-              subtitle: "${post.formattedDistance} away",
+              subtitle: post.formattedDistance != null
+                  ? "${post.formattedDistance} away"
+                  : null,
+              onTap: () {
+                context.read<MapSearchCubit>().selectPost(post.id);
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => HousingDetailPage(postId: post.id),
+                  ),
+                );
+              },
             ),
-            if (index < posts.length - 1) 
+            if (index < posts.length - 1)
               const SizedBox(height: 12),
           ],
         );
