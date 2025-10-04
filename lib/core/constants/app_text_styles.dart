@@ -33,6 +33,12 @@ class AppTextStyles {
     color: AppColors.black,
   );
 
+  static final TextStyle textNormalGrey = GoogleFonts.poppins(
+    fontSize: 16,
+    fontWeight: FontWeight.normal,
+    color: AppColors.coolGray,
+  );
+
   static final TextStyle buttons = GoogleFonts.poppins(
     fontSize: 20,
     fontWeight: FontWeight.bold,

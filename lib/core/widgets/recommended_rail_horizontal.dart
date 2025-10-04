@@ -1,87 +1,36 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
-import '../constants/app_text_styles.dart';
+import 'package:welhome/features/postDetail/presentation/pages/housing_detail_page.dart';
+import '../data/models/housing_post.dart';
+import 'housing_post_card.dart';
 
-class ProductCard extends StatelessWidget {
-  final String imageUrl;
-  final String title;
-  final double rating;
-  final int reviews;
-  final String price;
-  final VoidCallback? onTap;
+class RecommendedRailHorizontal extends StatelessWidget {
+  final List<HousingPost> posts;
 
-  const ProductCard({
-    super.key,
-    required this.imageUrl,
-    required this.title,
-    required this.rating,
-    required this.reviews,
-    required this.price,
-    this.onTap,
-  });
+  const RecommendedRailHorizontal({super.key, required this.posts});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 280,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // Hace que el Column tome el tamaño mínimo necesario
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                imageUrl,
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.tittleSmall,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: AppColors.black, size: 18),
-                      const SizedBox(width: 4),
-                      Text(
-                        rating.toStringAsFixed(2),
-                        style: AppTextStyles.textRegular.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '$reviews reviews',
-                        style: AppTextStyles.textSmall.copyWith(
-                          color: AppColors.coolGray,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '$price /month',
-                    style: AppTextStyles.textRegular,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+    return SizedBox(
+      height: 285,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: posts.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 16),
+        itemBuilder: (context, index) {
+          final post = posts[index];
+          return HousingPostCard(
+            post: post,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HousingDetailPage(postId: post.id),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
