@@ -30,7 +30,7 @@ class CustomBottomNavBar extends StatelessWidget {
         if (index == 0) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
+            MaterialPageRoute(builder: (context) => const HomePage(userId: 'StudentUserProfile10',)),
           );
         }
         if (index == 1) {

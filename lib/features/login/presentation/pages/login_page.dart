@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
           SnackBar(content: Text("Bienvenido ${credential.user?.email}")),
         );
 
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage(userId: 'StudentUserProfile10',)));
 
       } on FirebaseAuthException catch (e) {
         String message;
