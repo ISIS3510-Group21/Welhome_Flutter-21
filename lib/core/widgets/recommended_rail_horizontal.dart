@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:welhome/features/postDetail/presentation/pages/housing_detail_page.dart';
 import '../data/models/housing_post.dart';
 import 'housing_post_card.dart';
 
@@ -20,7 +21,14 @@ class RecommendedRailHorizontal extends StatelessWidget {
           final post = posts[index];
           return HousingPostCard(
             post: post,
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HousingDetailPage(postId: post.id),
+                ),
+              );
+            },
           );
         },
       ),

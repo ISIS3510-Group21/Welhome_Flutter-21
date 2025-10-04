@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:welhome/core/data/models/housing_post.dart';
+import 'package:welhome/features/postDetail/presentation/pages/housing_detail_page.dart';
 import 'recently_viewed_item.dart';
 
 class RecentlyViewedSection extends StatelessWidget {
@@ -34,7 +35,12 @@ class RecentlyViewedSection extends StatelessWidget {
               child: RecentlyViewedItem(
                 post: post,
                 onTap: () {
-                  // Navegar al detalle del post
+                  Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HousingDetailPage(postId: post.id),
+                    ),
+                  );
                 },
               ),
             );
