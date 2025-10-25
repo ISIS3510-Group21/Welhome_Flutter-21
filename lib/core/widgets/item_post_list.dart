@@ -5,7 +5,7 @@ import 'package:welhome/core/constants/app_text_styles.dart';
 class ItemPostList extends StatelessWidget {
   final String title;
   final String? imageUrl;
-  final String? placeholderAsset; // NUEVO
+  final String? placeholderAsset;
   final double rating;
   final String price;
   final String? subtitle;
@@ -41,7 +41,6 @@ class ItemPostList extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Imagen
             Container(
               width: 80,
               height: 80,
@@ -56,7 +55,6 @@ class ItemPostList extends StatelessWidget {
 
             const SizedBox(width: 12),
 
-            // Texto
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
