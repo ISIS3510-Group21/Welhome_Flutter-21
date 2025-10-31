@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "143622710409",
-    "project_id": "welhome-21",
-    "storage_bucket": "welhome-21.firebasestorage.app"
+    "project_number": "735015242553",
+    "project_id": "welhome-21-27f23",
+    "storage_bucket": "welhome-21-27f23.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:143622710409:android:07a29c7cd4669a7e621258",
+        "mobilesdk_app_id": "1:735015242553:android:f71ab9baab2361eba636e8",
         "android_client_info": {
           "package_name": "com.example.welhome"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDIReW0J867Fxo6LerepDzRLVvoP8AaYJA"
+          "current_key": "AIzaSyBuJdXVkGr_JxTC2cWbTNWF5vBmvc_yKEU"
         }
       ],
       "services": {
@@ -26,7 +26,7 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:143622710409:android:4a764102ca5e2e0f621258",
+        "mobilesdk_app_id": "1:735015242553:android:23c686504b0514bfa636e8",
         "android_client_info": {
           "package_name": "com.team21.myapplication"
         }
@@ -34,7 +34,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDIReW0J867Fxo6LerepDzRLVvoP8AaYJA"
+          "current_key": "AIzaSyBuJdXVkGr_JxTC2cWbTNWF5vBmvc_yKEU"
         }
       ],
       "services": {

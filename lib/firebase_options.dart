@@ -51,11 +51,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDIReW0J867Fxo6LerepDzRLVvoP8AaYJA',
-    appId: '1:143622710409:android:07a29c7cd4669a7e621258',
-    messagingSenderId: '143622710409',
-    projectId: 'welhome-21',
-    storageBucket: 'welhome-21.firebasestorage.app',
+    apiKey: 'AIzaSyBuJdXVkGr_JxTC2cWbTNWF5vBmvc_yKEU',
+    appId: '1:735015242553:android:f71ab9baab2361eba636e8',
+    messagingSenderId: '735015242553',
+    projectId: 'welhome-21-27f23',
+    storageBucket: 'welhome-21-27f23.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
