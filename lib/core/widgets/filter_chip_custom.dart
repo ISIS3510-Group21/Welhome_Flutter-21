@@ -6,12 +6,14 @@ class FilterChipCustom extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback? onTap;
+  final IconData? icon;
 
   const FilterChipCustom({
     super.key,
     required this.label,
     this.isSelected = false,
     this.onTap,
+    this.icon,
   });
 
   @override
@@ -27,14 +29,27 @@ class FilterChipCustom extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            height: 1.38,
-            color: isSelected ? AppColors.white : AppColors.black,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 18,
+                color: isSelected ? AppColors.white : AppColors.black,
+              ),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                height: 1.38,
+                color: isSelected ? AppColors.white : AppColors.black,
+              ),
+            ),
+          ],
         ),
       ),
     );
