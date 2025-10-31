@@ -1,26 +1,26 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:welhome/core/data/repositories/housing_repository.dart';
-import 'package:welhome/core/data/models/housing_post.dart';
+import 'package:welhome/features/housing/domain/entities/housing_post_entity.dart';
+import 'package:welhome/features/postDetail/domain/usecases/get_post_details.dart';
+
 part 'housing_detail_state.dart';
 
 class HousingDetailCubit extends Cubit<HousingDetailState> {
-  final HousingRepository housingRepository;
+  final GetPostDetails getPostDetails;
 
-  HousingDetailCubit({required this.housingRepository})
-      : super(HousingDetailInitial());
+  HousingDetailCubit({required this.getPostDetails}) : super(const HousingDetailInitial());
 
   Future<void> fetchHousingPost(String postId) async {
+    emit(const HousingDetailLoading());
     try {
-      emit(const HousingDetailLoading());
-      final post = await housingRepository.getHousingPostById(postId);
+      final post = await getPostDetails(postId: postId);
       if (post != null) {
         emit(HousingDetailLoaded(post));
       } else {
-        emit(const HousingDetailError('Housing post not found.'));
+        emit(const HousingDetailError("Housing post not found."));
       }
     } catch (e) {
-      emit(HousingDetailError(e.toString()));
+      emit(HousingDetailError("Failed to load housing details: ${e.toString()}"));
     }
   }
 }

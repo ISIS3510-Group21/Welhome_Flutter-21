@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:welhome/core/constants/app_text_styles.dart';
-import 'package:welhome/core/data/models/housing_post.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HousingDetailLocationMap extends StatelessWidget {
-  final Location location;
+  final GeoPoint location;
   final String address;
 
   const HousingDetailLocationMap({super.key, required this.location, required this.address});
 
   @override
   Widget build(BuildContext context) {
-    final LatLng propertyLatLng = LatLng(location.lat, location.lng);
+    final LatLng propertyLatLng = LatLng(location.latitude, location.longitude);
 
     return Container(
       width: double.infinity,
