@@ -3,13 +3,15 @@ import 'package:welhome/features/housing/data/models/housing_post_model.dart';
 import 'package:welhome/features/housing/data/models/reviews_model.dart';
 import 'package:welhome/features/housing/domain/entities/housing_post_entity.dart';
 import 'package:welhome/features/housing/domain/repositories/housing_repository.dart';
+import 'package:welhome/features/housing/domain/repositories/reviews_repository.dart';
 import 'package:welhome/features/housing/domain/repositories/student_user_profile_repository.dart';
 
 class HousingRepositoryImpl implements HousingRepository {
   final FirebaseFirestore _firestore;
   final StudentUserProfileRepository _userProfileRepo;
+  final ReviewsRepository _reviewsRepo;
 
-  HousingRepositoryImpl(this._firestore, this._userProfileRepo);
+  HousingRepositoryImpl(this._firestore, this._userProfileRepo, this._reviewsRepo);
 
   static const String _housingCollection = 'HousingPost';
 
@@ -25,16 +27,9 @@ class HousingRepositoryImpl implements HousingRepository {
       var postModel = HousingPostModel.fromMap(docSnapshot.data()!, documentId: docSnapshot.id);
 
       if (postModel.reviewsPath != null && postModel.reviewsPath!.isNotEmpty) {
-        final pathParts = postModel.reviewsPath!.split('/');
-        
-
-        if (pathParts.length == 3) {
-          final collectionName = pathParts[1];
-          final documentId = pathParts[2];
-
-          final reviewsSnapshot = await _firestore.collection(collectionName).doc(documentId).get();
-          final reviewsModel = ReviewsModel.fromMap(reviewsSnapshot.data() as Map<String, dynamic>, documentId: reviewsSnapshot.id);
-          postModel = postModel.copyWith(reviews: reviewsModel);
+        final reviews = await _reviewsRepo.getPostReviews(reviewsPath: postModel.reviewsPath!);
+        if (reviews != null) {
+          postModel = postModel.copyWith(reviews: reviews as ReviewsModel);
         }
       }
 
@@ -46,18 +41,21 @@ class HousingRepositoryImpl implements HousingRepository {
   }
 
   @override
-  Future<List<HousingPostEntity>> getRecommendedPosts() async {
+  Future<List<HousingPostEntity>> getRecommendedPosts(
+    {required String userId}) async {
     try {
 
-      final querySnapshot = await _firestore
-          .collection(_housingCollection)
-          .orderBy('creationDate', descending: true)
-          .limit(10)
-          .get();
+      final housingIds = await _userProfileRepo.getRecommendedHousingIds(userId);
 
-      return querySnapshot.docs
-          .map((doc) => HousingPostModel.fromMap(doc.data(), documentId: doc.id))
-          .toList();
+      if (housingIds.isEmpty) {
+        return [];
+      }
+
+      final housingPostsFutures =
+          housingIds.map((id) => getPostDetails(postId: id));
+      final housingPosts = await Future.wait(housingPostsFutures);
+
+      return housingPosts.whereType<HousingPostEntity>().toList();
     } catch (e) {
       print('Error en getRecommendedPosts: $e');
       rethrow;
@@ -98,9 +96,13 @@ class HousingRepositoryImpl implements HousingRepository {
           .where('status', isEqualTo: 'available')
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => HousingPostModel.fromMap(doc.data(), documentId: doc.id))
-          .toList();
+      final postFutures = querySnapshot.docs.map((doc) {
+        return getPostDetails(postId: doc.id);
+      }).toList();
+
+      final posts = await Future.wait(postFutures);
+
+      return posts.whereType<HousingPostEntity>().toList();
     } catch (e) {
       print('Error en findPostsNearLocation: $e');
       rethrow;

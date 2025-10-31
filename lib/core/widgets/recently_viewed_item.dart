@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:welhome/core/constants/app_text_styles.dart';
-import 'package:welhome/core/data/models/housing_post.dart';
+import 'package:welhome/features/housing/domain/entities/housing_post_entity.dart';
 
 class RecentlyViewedItem extends StatelessWidget {
-  final HousingPost post;
+  final HousingPostEntity post;
   final VoidCallback? onTap;
 
   const RecentlyViewedItem({
@@ -16,9 +16,12 @@ class RecentlyViewedItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final imageUrl = post.pictures.isNotEmpty
         ? post.pictures.first.photoPath
-        : 'lib/assets/images/fallback2.jpg';
+        : '';
 
-    int filledStars = post.rating.floor();
+    // Hacemos el cálculo de estrellas a prueba de errores.
+    // clamp() asegura que el valor esté siempre entre 0 y 5.
+    final rating = post.reviews.rating.clamp(0.0, 5.0);
+    int filledStars = rating.floor();
     int emptyStars = 5 - filledStars;
 
     return GestureDetector(
@@ -80,7 +83,7 @@ class RecentlyViewedItem extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  post.rating.toStringAsFixed(2),
+                  post.reviews.rating.toStringAsFixed(2),
                   style: AppTextStyles.tittleSmall,
                 ),
               ],

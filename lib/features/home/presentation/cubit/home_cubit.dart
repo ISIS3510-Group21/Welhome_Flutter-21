@@ -20,7 +20,7 @@ class HomeCubit extends Cubit<HomeState> {
     emit(HomeLoading());
 
     try {
-      final recommended = await getRecommendedPosts();
+      final recommended = await getRecommendedPosts(userId: userId);
       final visited = await getRecentlyViewedPosts(userId: userId);
 
       emit(HomeLoaded(

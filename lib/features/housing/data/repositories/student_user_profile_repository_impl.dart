@@ -6,21 +6,19 @@ class StudentUserProfileRepositoryImpl implements StudentUserProfileRepository {
 
   StudentUserProfileRepositoryImpl(this._firestore);
 
-  static const String _studentProfilesCollection = 'StudentProfiles';
+  static const String _studentProfilesCollection = 'StudentUserProfile';
 
   @override
   Future<List<String>> getVisitedHousingIds(String userId) async {
     try {
-      final docSnapshot =
-          await _firestore.collection(_studentProfilesCollection).doc(userId).get();
+      final snapshot = await _firestore
+          .collection(_studentProfilesCollection)
+          .doc(userId)
+          .collection('VisitedHousingPosts')
+          .get();
 
-      if (docSnapshot.exists) {
-        final data = docSnapshot.data();
-        if (data != null && data.containsKey('visitedHousingIds')) {
-          return List<String>.from(data['visitedHousingIds'] ?? []);
-        }
-      }
-      return [];
+      print('Fetched visited housing IDs for user $userId: ${snapshot.docs.map((doc) => doc['housing'] as String).toList()}');
+      return snapshot.docs.map((doc) => doc['housing'] as String).toList();
     } catch (e) {
       print('Error getting visited housing IDs for user $userId: $e');
       rethrow;
@@ -30,16 +28,13 @@ class StudentUserProfileRepositoryImpl implements StudentUserProfileRepository {
   @override
   Future<List<String>> getRecommendedHousingIds(String userId) async {
     try {
-      final docSnapshot =
-          await _firestore.collection(_studentProfilesCollection).doc(userId).get();
+      final snapshot = await _firestore
+          .collection(_studentProfilesCollection)
+          .doc(userId)
+          .collection('RecommendedHousingPosts')
+          .get();
 
-      if (docSnapshot.exists) {
-        final data = docSnapshot.data();
-        if (data != null && data.containsKey('recommendedHousingIds')) {
-          return List<String>.from(data['recommendedHousingIds'] ?? []);
-        }
-      }
-      return [];
+      return snapshot.docs.map((doc) => doc['housing'] as String).toList();
     } catch (e) {
       print('Error getting recommended housing IDs for user $userId: $e');
       rethrow;

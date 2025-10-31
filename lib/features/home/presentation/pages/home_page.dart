@@ -11,6 +11,7 @@ import 'package:welhome/features/home/domain/usecases/get_recommended_posts.dart
 import 'package:welhome/features/home/domain/usecases/get_recently_viewed_posts.dart';
 import 'package:welhome/features/housing/data/repositories/housing_repository_impl.dart'; // NEW: Importa la implementación concreta del repositorio de vivienda
 import 'package:welhome/features/housing/data/repositories/student_user_profile_repository_impl.dart';
+import 'package:welhome/features/housing/data/repositories/reviews_repository_impl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends StatelessWidget {
@@ -20,9 +21,11 @@ class HomePage extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
+    final reviewsRepository = ReviewsRepositoryImpl(FirebaseFirestore.instance);
     final domain_repo.HousingRepository housingRepository = HousingRepositoryImpl(
       FirebaseFirestore.instance,
       StudentUserProfileRepositoryImpl(FirebaseFirestore.instance),
+      reviewsRepository,
     );
 
     final getRecommendedPosts = GetRecommendedPosts(housingRepository);
