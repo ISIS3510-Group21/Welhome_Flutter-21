@@ -178,44 +178,44 @@ class PropertyRemoteDataSource {
 
   Future<Map<String, dynamic>> getAllTags() async {
     try {
-      final Map<String, List<String>> amenitiesByCategory = {
-        'Básicos': ['WiFi', 'Air Conditioning', 'Heating'],
-        'Cocina': [
-          'Refrigerator',
-          'Dishwasher',
-          'Oven',
-          'Microwave',
-          'Coffee Maker'
-        ],
-        'Lavandería': ['Washing Machine', 'Dryer'],
-        'Entretenimiento': ['TV', 'Playstation', 'BBQ'],
-        'Espacios': ['Workspace', 'Garden', 'Terrace', 'Balcony', 'Parking'],
-        'Comodidades': ['Elevator', 'Security', 'Desk', 'Fireplace'],
-        'Reglas': ['Pets Allowed'],
-      };
+      print('Fetching all tags from Firebase...');
+      
+      // Obtener amenities desde Firebase
+      final amenitiesSnapshot = await _firestore.collection('Amenities').get();
+      final amenities = amenitiesSnapshot.docs
+          .map((doc) => doc.data()['name'] as String?)
+          .where((name) => name != null)
+          .cast<String>()
+          .toList();
+      
+      print('Found ${amenities.length} amenities');
+      
+      // Ordenar las amenidades
+      amenities.sort();
 
-      final housingTags = [
-        'House',
-        'Penthouse',
-        'Apartment',
-        'Cabin',
-        'Room',
-        'PrivateBackyard',
-        'Vape-Free',
-        'Studio',
-        'Loft',
-        'SharedKitchen'
-      ];
+      // Obtener housing tags
+      final housingTagsSnapshot = await _firestore.collection('HousingTypes').get();
+      final housingTags = housingTagsSnapshot.docs
+          .map((doc) => doc.data()['name'] as String?)
+          .where((name) => name != null)
+          .cast<String>()
+          .toList();
+
+      // Ordenar los housing tags
+      housingTags.sort();
+
+      print('Retrieved ${amenities.length} amenities and ${housingTags.length} housing types');
 
       return {
-        'amenitiesByCategory': amenitiesByCategory,
+        'amenities': amenities,
         'housingTags': housingTags,
       };
     } catch (e) {
-      print('Error getting tags: $e');
+      print('Error getting tags from Firebase: $e');
+      // Fallback a una lista básica en caso de error
       return {
-        'amenities': [],
-        'housingTags': [],
+        'amenities': ['WiFi', 'AC'],
+        'housingTags': ['Apartment', 'House'],
       };
     }
   }

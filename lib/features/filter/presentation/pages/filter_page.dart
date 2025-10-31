@@ -23,8 +23,8 @@ class _FilterPageState extends State<FilterPage> {
   final List<String> _selectedAmenities = [];
   final List<String> _selectedHousingTags = [];
   Map<String, dynamic> _availableTags = {
-    'amenitiesByCategory': <String, List<String>>{},
-    'housingTags': <String>[],
+    'amenities': <dynamic>[],
+    'housingTags': <dynamic>[],
   };
 
   @override
@@ -36,7 +36,7 @@ class _FilterPageState extends State<FilterPage> {
   Future<void> _loadInitialData() async {
     final tags = await _propertyService.getAllTags();
     final properties = await _propertyService.getProperties();
-    
+
     setState(() {
       _availableTags = tags;
       _properties = properties;
@@ -48,7 +48,7 @@ class _FilterPageState extends State<FilterPage> {
       selectedAmenities: _selectedAmenities,
       selectedHousingTags: _selectedHousingTags,
     );
-    
+
     setState(() {
       _properties = filteredProperties;
     });
@@ -97,94 +97,69 @@ class _FilterPageState extends State<FilterPage> {
       backgroundColor: AppColors.white,
       body: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: AppSearchBar(),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const AppSearchBar(),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Filters',
+                    style: AppTextStyles.titleLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        // Housing Type Filters
+                        ...(_availableTags['housingTags'] as List<dynamic>? ?? [])
+                            .map((tag) => Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: FilterChipCustom(
+                                    label: tag.toString(),
+                                    icon: _getIconForHousingType(tag.toString()),
+                                    isSelected: _selectedHousingTags.contains(tag),
+                                    onTap: () => _toggleHousingTag(tag.toString()),
+                                  ),
+                                ))
+                            .toList(),
+                        // Separator
+                        if ((_availableTags['housingTags'] as List<dynamic>? ?? []).isNotEmpty &&
+                            (_availableTags['amenities'] as List<dynamic>? ?? []).isNotEmpty)
+                          Container(
+                            height: 32,
+                            width: 1,
+                            color: AppColors.coolGray.withOpacity(0.3),
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
+                        // Amenity Filters
+                        ...(_availableTags['amenities'] as List<dynamic>? ?? [])
+                            .map((amenity) => Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: FilterChipCustom(
+                                    label: amenity.toString(),
+                                    isSelected: _selectedAmenities.contains(amenity),
+                                    onTap: () => _toggleAmenity(amenity.toString()),
+                                  ),
+                                ))
+                            .toList(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(height: 16),
+            
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(
-                        'Filter by',
-                        style: AppTextStyles.titleLarge,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Housing Type Categories
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          for (final tag in _availableTags['housingTags'] ?? [])
-                            if (tag == 'House' || tag == 'Room' || tag == 'Cabin' || tag == 'Apartment')
-                              CategoryCard(
-                                icon: _getIconForHousingType(tag),
-                                label: tag,
-                                isSelected: _selectedHousingTags.contains(tag),
-                                onTap: () => _toggleHousingTag(tag),
-                              ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Amenities Filter Groups
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Amenidades', 
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          ...(_availableTags['amenitiesByCategory'] as Map<String, List<String>>)
-                              .entries
-                              .map((category) => ExpansionTile(
-                                    title: Text(
-                                      category.key,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    initiallyExpanded: false,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                                        child: Wrap(
-                                          spacing: 8,
-                                          runSpacing: 8,
-                                          children: [
-                                            for (final amenity in category.value)
-                                              FilterChipCustom(
-                                                label: amenity,
-                                                isSelected: _selectedAmenities.contains(amenity),
-                                                onTap: () => _toggleAmenity(amenity),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                    ],
-                                  ))
-                              ,
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
                     // Property Results
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -198,12 +173,13 @@ class _FilterPageState extends State<FilterPage> {
                           return SizedBox(
                             width: double.infinity,
                             child: ProductCard(
-                              imageUrl: property.pictures.isNotEmpty 
-                                ? property.pictures.first 
-                                : 'https://via.placeholder.com/300x200',
+                              imageUrl: property.pictures.isNotEmpty
+                                  ? property.pictures.first
+                                  : 'https://via.placeholder.com/300x200',
                               title: property.title,
                               rating: property.rating,
-                              reviews: 0, // TODO: Agregar reviews cuando estén disponibles
+                              reviews:
+                                  0, // TODO: Agregar reviews cuando estén disponibles
                               price: '\$${property.price.toStringAsFixed(2)}',
                               onTap: () {},
                             ),
