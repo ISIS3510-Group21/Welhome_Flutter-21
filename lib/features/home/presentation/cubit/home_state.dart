@@ -7,8 +7,8 @@ class HomeInitial extends HomeState {}
 class HomeLoading extends HomeState {}
 
 class HomeLoaded extends HomeState {
-  final List<HousingPost> recommendedPosts;
-  final List<HousingPost> recentlyViewedPosts;
+  final List<HousingPostEntity> recommendedPosts;
+  final List<HousingPostEntity> recentlyViewedPosts;
 
   HomeLoaded({required this.recommendedPosts, required this.recentlyViewedPosts});
 }

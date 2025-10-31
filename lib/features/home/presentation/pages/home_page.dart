@@ -1,30 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:welhome/core/constants/app_colors.dart';
-import 'package:welhome/core/data/repositories/housing_repository.dart';
-import 'package:welhome/core/data/repositories/student_user_profile_repository.dart';
-import 'package:welhome/core/data/services/student_user_profile_housing_service.dart';
 import 'package:welhome/core/widgets/app_search_bar.dart';
 import 'package:welhome/core/widgets/custom_bottom_nav_bar.dart';
 import 'package:welhome/core/widgets/recently_viewed_section.dart';
 import 'package:welhome/core/widgets/recommended_rail_horizontal.dart';
 import 'package:welhome/features/home/presentation/cubit/home_cubit.dart';
+import 'package:welhome/features/housing/domain/repositories/housing_repository.dart' as domain_repo;
+import 'package:welhome/features/home/domain/usecases/get_recommended_posts.dart';
+import 'package:welhome/features/home/domain/usecases/get_recently_viewed_posts.dart';
+import 'package:welhome/features/housing/data/repositories/housing_repository_impl.dart'; // NEW: Importa la implementación concreta del repositorio de vivienda
+import 'package:welhome/features/housing/data/repositories/student_user_profile_repository_impl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends StatelessWidget {
   final String userId;
 
   const HomePage({super.key, required this.userId});
-
+  
   @override
   Widget build(BuildContext context) {
-    final housingService = StudentUserProfileHousingService(
-      studentUserProfileRepo: StudentUserProfileRepository(),
-      housingRepo: HousingRepository(),
+    final domain_repo.HousingRepository housingRepository = HousingRepositoryImpl(
+      FirebaseFirestore.instance,
+      StudentUserProfileRepositoryImpl(FirebaseFirestore.instance),
     );
 
+    final getRecommendedPosts = GetRecommendedPosts(housingRepository);
+    final getRecentlyViewedPosts = GetRecentlyViewedPosts(housingRepository);
+
     return BlocProvider(
-      create: (_) => HomeCubit(housingService: housingService, userId: userId)
-        ..loadHomeData(),
+      create: (_) => HomeCubit(getRecommendedPosts: getRecommendedPosts, getRecentlyViewedPosts: getRecentlyViewedPosts, userId: userId)..loadHomeData(),
       child: Scaffold(
         backgroundColor: AppColors.white,
         body: SafeArea(

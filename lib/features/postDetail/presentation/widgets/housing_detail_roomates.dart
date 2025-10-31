@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:welhome/core/constants/app_text_styles.dart';
-import 'package:welhome/core/data/models/housing_post.dart';
+import 'package:welhome/features/housing/domain/entities/roomate_profile_entity.dart';
 import 'dart:math';
 
 class HousingDetailRoommates extends StatelessWidget {
-  final List<RoomateProfile> roommates;
+  final List<RoomateProfileEntity> roommates;
 
   const HousingDetailRoommates({super.key, required this.roommates});
 

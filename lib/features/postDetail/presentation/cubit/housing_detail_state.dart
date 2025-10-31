@@ -16,7 +16,7 @@ class HousingDetailLoading extends HousingDetailState {
 }
 
 class HousingDetailLoaded extends HousingDetailState {
-  final HousingPost post;
+  final HousingPostEntity post;
 
   const HousingDetailLoaded(this.post);
 
