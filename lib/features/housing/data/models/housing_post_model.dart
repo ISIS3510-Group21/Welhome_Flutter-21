@@ -14,22 +14,22 @@ class HousingPostModel extends HousingPostEntity {
   final String? reviewsPath;
 
   HousingPostModel({
-    required String id,
+    required super.id,
     required Timestamp creationDate,
     required Timestamp updateAt,
     Timestamp? closureDate,
     Timestamp? statusChange,
-    String address = "",
-    double price = 0.0,
-    double rating = 0.0,
-    String bookingDates = "",
-    String status = "available",
-    String title = "No title", 
-    String description = "",
+    super.address = "",
+    super.price = 0.0,
+    super.rating = 0.0,
+    super.bookingDates = "",
+    super.status = "available",
+    super.title = "No title", 
+    super.description = "",
     LocationModel? location,
-    String thumbnail =
+    super.thumbnail =
         "https://img.freepik.com/free-photo/beautiful-interior-shot-modern-house-with-white-relaxing-walls-furniture-technology_181624-3828.jpg?semt=ais_hybrid&w=740&q=80",
-    String host = "",
+    super.host = "",
     ReviewsModel? reviews, // Puede ser nulo inicialmente
     this.reviewsPath,
     List<PictureModel> pictures = const [],
@@ -40,27 +40,25 @@ class HousingPostModel extends HousingPostEntity {
   })  :
         closureDate = closureDate ?? Timestamp.now(),
         statusChange = statusChange ?? Timestamp.now(),
-        super(
-            id: id,
-            creationDate: (creationDate).toDate(),
+        super(            creationDate: (creationDate).toDate(),
             updateAt: (updateAt).toDate(),
-            address: address,
-            price: price,
-            rating: rating,
             reviews: reviews ?? const ReviewsModel(id: '', rating: 0.0, reviewQuantity: 0),
-            title: title,
-            status: status,
-            description: description,
             location: location ?? const LocationModel(),
-            thumbnail: thumbnail,
-            host: host,
-            bookingDates: bookingDates,
             pictures: pictures,
             tags: tag,
             amenities: ammenities,
             roomateProfile: roomateProfile);
 
   factory HousingPostModel.fromMap(Map<String, dynamic> data, {String? documentId}) {
+    String? extractReviewsPath(dynamic reviewsField) {
+      if (reviewsField is String) {
+        return reviewsField;
+      }
+      if (reviewsField is DocumentReference) {
+        return reviewsField.path;
+      }
+      return null;
+    }
     return HousingPostModel(
       id: documentId ?? data['id'] ?? "",
       creationDate: data['creationDate'] ?? Timestamp.now(),
@@ -78,8 +76,8 @@ class HousingPostModel extends HousingPostEntity {
           : const LocationModel(),
       thumbnail: data['thumbnail'] ?? "",
       host: data['host'] ?? "",
-      reviewsPath: data['reviews'] as String?,
-      bookingDates: data['bookingDates'] ?? "",
+      reviewsPath: extractReviewsPath(data['reviews']),
+      bookingDates: data['bookingDates']?.toString() ?? "",
       pictures: (data['Pictures'] as List<dynamic>?)
               ?.map((e) => PictureModel.fromMap(e))
               .toList() ??
@@ -133,11 +131,11 @@ class HousingPostModel extends HousingPostEntity {
     rating: rating ?? this.rating,
     status: status ?? this.status,
     title: title ?? this.title, 
-    description: description ?? this.description,
-    location: location ?? (this.location as LocationModel),
-    thumbnail: thumbnail ?? this.thumbnail,
-    host: host ?? this.host, 
-    reviews: reviews ?? (this.reviews as ReviewsModel?),
+    description: description ?? super.description,
+    location: location ?? (super.location as LocationModel),
+    thumbnail: thumbnail ?? super.thumbnail,
+    host: host ?? super.host, 
+    reviews: reviews ?? this.reviews as ReviewsModel,
     reviewsPath: reviewsPath ?? this.reviewsPath,
     bookingDates: bookingDates ?? this.bookingDates,
     pictures: pictures ?? (this.pictures as List<PictureModel>),

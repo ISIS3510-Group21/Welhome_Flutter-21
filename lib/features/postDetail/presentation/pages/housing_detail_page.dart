@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:welhome/core/constants/app_colors.dart';
 import 'package:welhome/features/housing/data/repositories/housing_repository_impl.dart';
+import 'package:welhome/features/housing/data/repositories/reviews_repository_impl.dart';
 import 'package:welhome/features/housing/data/repositories/student_user_profile_repository_impl.dart';
 import 'package:welhome/features/housing/domain/repositories/housing_repository.dart' as domain_repo;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,9 +23,11 @@ class HousingDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final reviewsRepository = ReviewsRepositoryImpl(FirebaseFirestore.instance);
     final domain_repo.HousingRepository housingRepository = HousingRepositoryImpl(
       FirebaseFirestore.instance,
       StudentUserProfileRepositoryImpl(FirebaseFirestore.instance),
+      reviewsRepository,
     );
     final getPostDetails = GetPostDetails(housingRepository);
 
