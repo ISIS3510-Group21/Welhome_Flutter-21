@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:welhome/features/housing/data/models/housing_post_model.dart';
+import 'package:welhome/features/housing/data/models/amenity_model.dart';
 import 'package:welhome/features/housing/data/models/reviews_model.dart';
+import 'package:welhome/features/housing/data/models/roomate_profile_model.dart';
 import 'package:welhome/features/housing/domain/entities/housing_post_entity.dart';
 import 'package:welhome/features/housing/domain/repositories/housing_repository.dart';
 import 'package:welhome/features/housing/domain/repositories/reviews_repository.dart';
@@ -32,6 +34,26 @@ class HousingRepositoryImpl implements HousingRepository {
           postModel = postModel.copyWith(reviews: reviews as ReviewsModel);
         }
       }
+
+      final amenitiesSnapshot = await _firestore
+          .collection(_housingCollection)
+          .doc(postId)
+          .collection('Ammenities')
+          .get();
+
+      final amenities = amenitiesSnapshot.docs.map((doc) => AmenityModel.fromMap(doc.data(), documentId: doc.id)).toList();
+      print('Ammenities fetched: ${amenities.length}');
+      print('Ammenities data: ${amenities.map((a) => a.toMap()).toList()}');
+      postModel = postModel.copyWith(ammenities: amenities);
+
+      final roomatesSnapshot = await _firestore
+          .collection(_housingCollection)
+          .doc(postId)
+          .collection('RoomateProfile')
+          .get();
+          
+      final roomates = roomatesSnapshot.docs.map((doc) => RoomateProfileModel.fromMap(doc.data())).toList();
+      postModel = postModel.copyWith(roomateProfile: roomates);
 
       return postModel;
     } catch (e) {

@@ -4,11 +4,19 @@ import 'package:welhome/core/constants/app_text_styles.dart';
 import 'package:welhome/features/housing/domain/entities/housing_post_entity.dart';
 
 class HousingDetailHeader extends StatelessWidget {
-  final HousingPostEntity post;
+  final List<String> imageUrls;
+  final double rating;
+  final int reviewsCount;
+  final String title;
+  final double price;
 
   const HousingDetailHeader({
     super.key,
-    required this.post,
+    required this.imageUrls,
+    required this.rating,
+    required this.reviewsCount,
+    required this.title,
+    required this.price,
   });
 
   @override
@@ -22,15 +30,15 @@ class HousingDetailHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (post.pictures.isNotEmpty)
+        if (imageUrls.isNotEmpty)
           SizedBox(
             height: 212,
             width: double.infinity,
             child: PageView.builder(
-              itemCount: post.pictures.length,
+              itemCount: imageUrls.length,
               itemBuilder: (context, index) {
                 return Image.network(
-                  post.pictures[index].photoPath,
+                  imageUrls[index],
                   fit: BoxFit.cover,
                   width: double.infinity,
                   errorBuilder: (context, error, stackTrace) {
@@ -62,7 +70,7 @@ class HousingDetailHeader extends StatelessWidget {
               const Icon(Icons.star, color: Colors.black, size: 20),
               const SizedBox(width: 4),
               Text(
-                post.reviews.rating.toStringAsFixed(2),
+                rating.toStringAsFixed(2),
                 style: AppTextStyles.tittleSmall.copyWith(
                   color: Colors.black,
                   fontSize: 16,
@@ -73,7 +81,7 @@ class HousingDetailHeader extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                "${post.reviews.reviewQuantity} reviews", // Usando la propiedad de la entidad
+                "$reviewsCount reviews",
                 style: AppTextStyles.textRegular.copyWith(
                   color: const Color(0xFF3B429F),
                   fontSize: 16,
@@ -90,7 +98,7 @@ class HousingDetailHeader extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            post.title,
+            title,
             style: AppTextStyles.tittleMedium.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -100,7 +108,7 @@ class HousingDetailHeader extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            '\$${post.price.toStringAsFixed(0)} /month',
+            '\$${price.toStringAsFixed(0)} /month',
             style: AppTextStyles.textRegular,
           ),
         ),
