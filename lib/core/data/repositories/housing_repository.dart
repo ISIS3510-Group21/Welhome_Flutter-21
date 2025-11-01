@@ -73,7 +73,6 @@ class HousingRepository {
     }
   }
 
-  // Get all housing posts without distance calculation
   Future<List<HousingPost>> getAllHousingPosts() async {
     try {
       final QuerySnapshot snapshot = await _firestore
@@ -131,7 +130,6 @@ class HousingRepository {
         documentId: doc.id,
       );
 
-      // Traer subcollection Pictures
       final picsSnapshot = await _firestore
           .collection(housingCollection)
           .doc(postId)
@@ -151,6 +149,8 @@ class HousingRepository {
       final ammenities = ammenSnapshot.docs
           .map((d) => Ammenities.fromMap(d.data(), documentId: d.id))
           .toList();
+          print('Ammenities fetched: ${ammenities.length}');
+          print('Ammenities data: ${ammenities.map((a) => a.toMap()).toList()}');
 
       final roomateSnapshot = await _firestore
         .collection(housingCollection)
@@ -220,7 +220,6 @@ class HousingRepository {
     }
   }
 
-  // Method to get housing posts by multiple criteria
   Future<List<HousingPost>> getHousingPostsByCriteria({
     double? minPrice,
     double? maxPrice,

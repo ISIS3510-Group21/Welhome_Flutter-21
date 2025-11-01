@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart'; 
 import 'package:welhome/core/constants/app_text_styles.dart';
 import 'package:welhome/features/housing/domain/entities/amenity_entity.dart';
-import 'dart:math';
-
-
+import 'dart:math'; 
 
 class HousingDetailAmenities extends StatelessWidget {
   final List<AmenityEntity> amenities;
-
+  
   HousingDetailAmenities({super.key, required this.amenities});
 
   // Lista de íconos posibles
@@ -18,10 +16,10 @@ class HousingDetailAmenities extends StatelessWidget {
     Icons.bed_outlined,
     Icons.bathtub_outlined,
     Icons.chair_outlined,
-    Icons.kitchen_outlined,
+    Icons.kitchen_outlined, 
   ];
 
-  final Random _random = Random();
+  final Random _random = Random(); 
 
   Widget _buildAmenityCard(String label) {
     final icon = amenityIcons[_random.nextInt(amenityIcons.length)];
@@ -58,7 +56,7 @@ class HousingDetailAmenities extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (amenities.isEmpty) return const SizedBox.shrink();
+    if (amenities.isEmpty) return const SizedBox.shrink(); 
 
     final displayedAmenities =
         amenities.length > 4 ? amenities.sublist(0, 4) : amenities;
@@ -68,7 +66,7 @@ class HousingDetailAmenities extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Amenities', style: AppTextStyles.tittleMedium),
+          Text('Amenities', style: AppTextStyles.tittleMedium), 
           const SizedBox(height: 12),
           LayoutBuilder(
             builder: (context, constraints) {
@@ -76,8 +74,8 @@ class HousingDetailAmenities extends StatelessWidget {
               return Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: displayedAmenities
-                    .map((amenity) => SizedBox(
+                children: displayedAmenities 
+                    .map((amenity) => SizedBox( 
                           width: cardWidth,
                           child: _buildAmenityCard(amenity.name),
                         ))

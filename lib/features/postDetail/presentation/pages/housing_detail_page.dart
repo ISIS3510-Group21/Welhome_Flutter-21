@@ -15,26 +15,26 @@ import 'package:welhome/features/postDetail/presentation/widgets/housing_detail_
 import 'package:welhome/features/postDetail/presentation/widgets/housing_detail_host.dart';
 import 'package:welhome/features/postDetail/presentation/widgets/housing_detail_location_map.dart';
 import 'package:welhome/features/postDetail/presentation/widgets/housing_detail_roomates.dart';
-
-class HousingDetailPage extends StatelessWidget {
+class HousingDetailPage extends StatefulWidget {
   final String postId;
 
   const HousingDetailPage({super.key, required this.postId});
 
   @override
-  Widget build(BuildContext context) {
-    final reviewsRepository = ReviewsRepositoryImpl(FirebaseFirestore.instance);
-    final domain_repo.HousingRepository housingRepository = HousingRepositoryImpl(
-      FirebaseFirestore.instance,
-      StudentUserProfileRepositoryImpl(FirebaseFirestore.instance),
-      reviewsRepository,
-    );
-    final getPostDetails = GetPostDetails(housingRepository);
+  State<HousingDetailPage> createState() => _HousingDetailPageState();
+}
 
-    return BlocProvider(
-      create: (_) =>
-          HousingDetailCubit(getPostDetails: getPostDetails)..fetchHousingPost(postId),
-      child: Scaffold(
+class _HousingDetailPageState extends State<HousingDetailPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Llama al cubit para que cargue los datos cuando el widget se inicializa.
+    context.read<HousingDetailCubit>().fetchHousingPost(widget.postId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
         appBar: AppBar(
           title: const SizedBox.shrink(),
           elevation: 0,
@@ -53,29 +53,38 @@ class HousingDetailPage extends StatelessWidget {
 
               return SafeArea(
                 child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      HousingDetailHeader(post: post),
-                      const CustomDivider(),
-                      HousingDetailAmenities(amenities: post.amenities),
-                      const CustomDivider(),
-                      HousingDetailRoommates(roommates: post.roomateProfile),
-                      const CustomDivider(),
-                      HousingDetailHost(hostName: post.host),
-                      const CustomDivider(),
-                      HousingDetailLocationMap(
-                        location: GeoPoint(post.location.lat, post.location.lng),
-                        address: post.address,
-                      ),
-                      const CustomDivider(),
-                      GenericBottomButton(
-                        text: 'Book Visit',
-                        onPressed: () {
-                          debugPrint('Book Visit pressed');
-                        },
-                      )
-                    ],
+                  child: Container(
+                    color: AppColors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        HousingDetailHeader(
+                          imageUrls: [post.thumbnail],
+                          rating: post.reviews.rating,
+                          reviewsCount: post.reviews.reviewQuantity,
+                          title: post.title,
+                          price: post.price,
+                        ),
+                        const CustomDivider(),
+                        HousingDetailAmenities(amenities: post.amenities),
+                        const CustomDivider(),
+                        HousingDetailRoommates(roommates: post.roomateProfile),
+                        const CustomDivider(),
+                        HousingDetailHost(hostName: post.host),
+                        const CustomDivider(),
+                        HousingDetailLocationMap(
+                          location: post.location,
+                          address: post.address,
+                        ),
+                        const CustomDivider(),
+                        GenericBottomButton(
+                          text: 'Book Visit',
+                          onPressed: () {
+                            debugPrint('Book Visit pressed');
+                          },
+                        )
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -87,7 +96,6 @@ class HousingDetailPage extends StatelessWidget {
             return const SizedBox.shrink();
           },
         ),
-      ),
-    );
+      );
   }
 }
