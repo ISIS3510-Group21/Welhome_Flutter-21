@@ -4,6 +4,8 @@ import 'package:welhome/core/constants/app_text_styles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:welhome/features/home/presentation/pages/home_page.dart';
 import 'package:welhome/features/register/presentation/pages/register_page.dart';
+import 'package:welhome/features/login/presentation/pages/auth_local_service.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,6 +20,25 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _loading = false;
+  bool _isConnected = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkConnectivity();
+    Connectivity().onConnectivityChanged.listen((result) {
+      setState(() {
+        _isConnected = result != ConnectivityResult.none;
+      });
+    });
+  }
+
+  Future<void> _checkConnectivity() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    setState(() {
+      _isConnected = connectivityResult != ConnectivityResult.none;
+    });
+  }
 
   @override
   void dispose() {
@@ -27,36 +48,80 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _loading = true);
-      try {
-        final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+    if (!_formKey.currentState!.validate()) return;
 
-        // Si llega aquí, el login fue exitoso
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Bienvenido ${credential.user?.email}")),
-        );
+    setState(() => _loading = true);
+    await _checkConnectivity();
 
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage(userId: 'Profile_Student10',)));
+    try {
+      // 🔴 SIN CONEXIÓN → intentar sesión local
+      if (!_isConnected) {
+        final hasSession = await AuthLocalService.hasSavedSession();
+        final savedEmail = await AuthLocalService.getSavedEmail();
 
-      } on FirebaseAuthException catch (e) {
-        String message;
-        if (e.code == 'user-not-found') {
-          message = "No existe un usuario con ese correo.";
-        } else if (e.code == 'wrong-password') {
-          message = "Contraseña incorrecta.";
+        if (hasSession && savedEmail == _emailController.text.trim()) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Modo offline: sesión restaurada.")),
+          );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const HomePage(userId: 'Profile_Student10'),
+            ),
+          );
         } else {
-          message = "Error: ${e.message}";
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Sin conexión y sin sesión previa."),
+            ),
+          );
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
-      } finally {
-        setState(() => _loading = false);
+        return;
       }
+
+      // 🌐 CON CONEXIÓN → login con Firebase
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      await AuthLocalService.saveUserSession(_emailController.text.trim());
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Bienvenido ${credential.user?.email}")),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const HomePage(userId: 'Profile_Student10'),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      String message;
+      switch (e.code) {
+        case 'user-not-found':
+          message = "No existe un usuario con ese correo.";
+          break;
+        case 'wrong-password':
+          message = "Contraseña incorrecta.";
+          break;
+        case 'network-request-failed':
+          message = "Error de red. Verifica tu conexión a Internet.";
+          break;
+        default:
+          message = "Error: ${e.message}";
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error inesperado: $e")),
+      );
+    } finally {
+      setState(() => _loading = false);
     }
   }
 
@@ -71,6 +136,19 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                if (!_isConnected)
+                  Container(
+                    width: double.infinity,
+                    color: Colors.redAccent,
+                    padding: const EdgeInsets.all(8),
+                    child: const Text(
+                      "Sin conexión: usando modo offline",
+                      style: TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                const SizedBox(height: 20),
+
                 // Logo
                 Container(
                   height: 220,
@@ -123,7 +201,9 @@ class _LoginPageState extends State<LoginPage> {
                     fillColor: AppColors.lavenderLight,
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -141,22 +221,24 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 10),
 
-                // Botón "Olvidé mi contraseña"
+                // Olvidé mi contraseña
                 Align(
                   alignment: Alignment.center,
                   child: TextButton(
                     onPressed: () async {
                       if (_emailController.text.isNotEmpty) {
-                        await FirebaseAuth.instance
-                            .sendPasswordResetEmail(email: _emailController.text.trim());
+                        await FirebaseAuth.instance.sendPasswordResetEmail(
+                            email: _emailController.text.trim());
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Email de recuperación enviado.")),
+                          const SnackBar(
+                              content: Text("Email de recuperación enviado.")),
                         );
                       }
                     },
                     child: Text(
                       "Forgot Password?",
-                      style: AppTextStyles.textRegular.copyWith(color: AppColors.violetBlue),
+                      style: AppTextStyles.textRegular
+                          .copyWith(color: AppColors.violetBlue),
                     ),
                   ),
                 ),
@@ -187,7 +269,11 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterPage()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const RegisterPage()),
+                      );
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -197,7 +283,8 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     child: Text(
                       "Register now",
-                      style: AppTextStyles.textRegular.copyWith(color: AppColors.violetBlue),
+                      style: AppTextStyles.textRegular
+                          .copyWith(color: AppColors.violetBlue),
                     ),
                   ),
                 ),
