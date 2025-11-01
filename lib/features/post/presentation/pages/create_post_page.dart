@@ -115,7 +115,7 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
 
   Future<void> _pickMultipleFromGallery() async {
     final pickedList = await _picker.pickMultiImage(imageQuality: 80);
-    if (pickedList != null && pickedList.isNotEmpty) {
+    if (pickedList.isNotEmpty) {
       setState(() => _otherPhotos.addAll(pickedList));
     }
   }
@@ -353,7 +353,7 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
               const SizedBox(height: 6),
               TextFormField(
                 controller: _priceController,
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
                   hintText: 'Enter price',
                   border: OutlineInputBorder(

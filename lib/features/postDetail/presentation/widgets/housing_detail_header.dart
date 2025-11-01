@@ -75,7 +75,7 @@ class HousingDetailHeader extends StatelessWidget {
               Text(
                 "${post.reviews.reviewQuantity} reviews", // Usando la propiedad de la entidad
                 style: AppTextStyles.textRegular.copyWith(
-                  color: Color(0xFF3B429F),
+                  color: const Color(0xFF3B429F),
                   fontSize: 16,
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.w400,

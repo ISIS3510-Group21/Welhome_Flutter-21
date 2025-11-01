@@ -29,7 +29,7 @@ class ItemPostList extends StatelessWidget {
         ? NetworkImage(imageUrl!)
         : (placeholderAsset != null
             ? AssetImage(placeholderAsset!)
-            : AssetImage('assets/images/fallback1.jpg')) as ImageProvider;
+            : const AssetImage('assets/images/fallback1.jpg')) as ImageProvider;
 
     return InkWell(
       onTap: onTap,

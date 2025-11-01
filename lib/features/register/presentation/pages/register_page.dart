@@ -167,7 +167,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<int>(
-                      value: _selectedDay,
+                      initialValue: _selectedDay,
                       decoration: InputDecoration(
                         hintText: "Day",
                         border: OutlineInputBorder(
@@ -187,7 +187,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButtonFormField<int>(
-                      value: _selectedMonth,
+                      initialValue: _selectedMonth,
                       decoration: InputDecoration(
                         hintText: "Month",
                         border: OutlineInputBorder(
@@ -207,7 +207,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButtonFormField<int>(
-                      value: _selectedYear,
+                      initialValue: _selectedYear,
                       decoration: InputDecoration(
                         hintText: "Year",
                         border: OutlineInputBorder(
@@ -290,7 +290,7 @@ class _RegisterPageState extends State<RegisterPage> {
               Text("Gender", style: AppTextStyles.tittleSmall),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
-                value: _gender,
+                initialValue: _gender,
                 decoration: InputDecoration(
                   hintText: "Choose a gender",
                   border: OutlineInputBorder(
@@ -361,7 +361,7 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: 6),
 
               DropdownButtonFormField<String>(
-                value: _language,
+                initialValue: _language,
                 decoration: InputDecoration(
                   hintText: "Prefered Language",
                   border: OutlineInputBorder(

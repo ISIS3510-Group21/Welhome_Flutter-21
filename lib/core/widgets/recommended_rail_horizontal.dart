@@ -6,7 +6,7 @@ import 'housing_post_card.dart';
 class RecommendedRailHorizontal extends StatelessWidget {
   final List<HousingPostEntity> posts;
 
-  const RecommendedRailHorizontal({Key? key, required this.posts}) : super(key: key);
+  const RecommendedRailHorizontal({super.key, required this.posts});
 
   @override
   Widget build(BuildContext context) {

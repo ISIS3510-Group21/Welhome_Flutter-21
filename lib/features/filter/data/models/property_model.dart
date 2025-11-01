@@ -3,36 +3,21 @@ import 'package:welhome/features/filter/domain/entities/property.dart';
 
 class PropertyModel extends Property {
   PropertyModel({
-    required String id,
-    required String title,
-    required String description,
-    required String address,
-    required double price,
-    required double rating,
-    required DateTime creationDate,
-    required DateTime updatedAt,
-    required Map<String, double> location,
-    required String host,
-    DateTime? closureDate,
-    List<String> amenities = const [],
-    List<String> housingTags = const [],
-    List<String> pictures = const [],
-  }) : super(
-          id: id,
-          title: title,
-          description: description,
-          address: address,
-          price: price,
-          rating: rating,
-          creationDate: creationDate,
-          updatedAt: updatedAt,
-          location: location,
-          host: host,
-          closureDate: closureDate,
-          amenities: amenities,
-          housingTags: housingTags,
-          pictures: pictures,
-        );
+    required super.id,
+    required super.title,
+    required super.description,
+    required super.address,
+    required super.price,
+    required super.rating,
+    required super.creationDate,
+    required super.updatedAt,
+    required super.location,
+    required super.host,
+    super.closureDate,
+    super.amenities,
+    super.housingTags,
+    super.pictures,
+  });
 
   factory PropertyModel.fromJson(Map<String, dynamic> json) {
     double parsePrice(dynamic price) {
@@ -52,22 +37,39 @@ class PropertyModel extends Property {
       address: json['address']?.toString() ?? 'No Address',
       price: parsePrice(json['price']),
       rating: json['rating'] != null ? (json['rating'] as num).toDouble() : 0.0,
-      creationDate: json['creationDate'] is Timestamp 
-          ? (json['creationDate'] as Timestamp).toDate()
-          : DateTime.now(),
-      closureDate: json['closureDate'] is Timestamp
-          ? (json['closureDate'] as Timestamp).toDate()
-          : null,
-      updatedAt: json['updatedAt'] is Timestamp
-          ? (json['updatedAt'] as Timestamp).toDate()
-          : DateTime.now(),
+    creationDate: json['creationDate'] is Timestamp
+      ? (json['creationDate'] as Timestamp).toDate()
+      : (json['creationDate'] is int
+        ? DateTime.fromMillisecondsSinceEpoch(json['creationDate'] as int)
+        : (json['creationDate'] is String
+          ? DateTime.tryParse(json['creationDate'] as String) ?? DateTime.now()
+          : DateTime.now())),
+    closureDate: json['closureDate'] is Timestamp
+      ? (json['closureDate'] as Timestamp).toDate()
+      : (json['closureDate'] is int
+        ? DateTime.fromMillisecondsSinceEpoch(json['closureDate'] as int)
+        : (json['closureDate'] is String
+          ? DateTime.tryParse(json['closureDate'] as String)
+          : null)),
+    updatedAt: json['updatedAt'] is Timestamp
+      ? (json['updatedAt'] as Timestamp).toDate()
+      : (json['updatedAt'] is int
+        ? DateTime.fromMillisecondsSinceEpoch(json['updatedAt'] as int)
+        : (json['updatedAt'] is String
+          ? DateTime.tryParse(json['updatedAt'] as String) ?? DateTime.now()
+          : DateTime.now())),
       location: (json['location'] is Map)
           ? {
               'lat': (json['location'] as Map)['lat']?.toDouble() ?? 0.0,
               'lng': (json['location'] as Map)['lng']?.toDouble() ?? 0.0,
             }
           : {'lat': 0.0, 'lng': 0.0},
-      host: json['host']?.toString() ?? 'No Host',
+      host: json['host'] is DocumentReference 
+          ? (json['host'] as DocumentReference).id
+          : json['host']?.toString() ?? 'No Host',
+      amenities: (json['amenities'] as List<dynamic>?)?.cast<String>() ?? [],
+      housingTags: (json['housingTags'] as List<dynamic>?)?.cast<String>() ?? [],
+      pictures: (json['pictures'] as List<dynamic>?)?.cast<String>() ?? [],
     );
   }
 
@@ -79,9 +81,10 @@ class PropertyModel extends Property {
       'address': address,
       'price': price,
       'rating': rating,
-      'creationDate': creationDate,
-      'closureDate': closureDate,
-      'updatedAt': updatedAt,
+      // Store dates as ISO8601 strings so they are JSON encodable
+      'creationDate': creationDate.toIso8601String(),
+      'closureDate': closureDate?.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
       'location': location,
       'host': host,
       'amenities': amenities,

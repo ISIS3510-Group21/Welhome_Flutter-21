@@ -2,10 +2,10 @@ import 'package:welhome/features/housing/domain/entities/reviews_entity.dart';
 
 class ReviewsModel extends ReviewsEntity {
   const ReviewsModel({
-    required String id,
-    required double rating,
-    required int reviewQuantity,
-  }) : super(id: id, rating: rating, reviewQuantity: reviewQuantity);
+    required super.id,
+    required super.rating,
+    required super.reviewQuantity,
+  });
 
   factory ReviewsModel.fromMap(Map<String, dynamic> data, {String? documentId}) {
     return ReviewsModel(

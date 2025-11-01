@@ -2,10 +2,10 @@ import 'package:welhome/features/housing/domain/entities/roomate_profile_entity.
 
 class RoomateProfileModel extends RoomateProfileEntity {
   const RoomateProfileModel({
-    String id = "",
-    String name = "",
-    String studentUserID = "",
-  }) : super(id: id, name: name, studentUserID: studentUserID);
+    super.id = "",
+    super.name = "",
+    super.studentUserID = "",
+  });
 
   factory RoomateProfileModel.fromMap(Map<String, dynamic> data) {
     return RoomateProfileModel(

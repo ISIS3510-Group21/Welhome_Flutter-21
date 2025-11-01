@@ -7,7 +7,7 @@ import 'recently_viewed_item.dart';
 class RecentlyViewedSection extends StatelessWidget {
   final List<HousingPostEntity> posts;
 
-  const RecentlyViewedSection({Key? key, required this.posts}) : super(key: key);
+  const RecentlyViewedSection({super.key, required this.posts});
 
   @override
   Widget build(BuildContext context) {

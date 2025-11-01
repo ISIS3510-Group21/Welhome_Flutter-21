@@ -32,33 +32,52 @@ class HousingPostModel extends HousingPostEntity {
     super.host = "",
     ReviewsModel? reviews, // Puede ser nulo inicialmente
     this.reviewsPath,
-    List<PictureModel> pictures = const [],
+    List<PictureModel> super.pictures = const [],
     List<TagHousingPostModel> tag = const [],
     List<AmenityModel> ammenities = const [],
-    List<RoomateProfileModel> roomateProfile = const [],
+    List<RoomateProfileModel> super.roomateProfile = const [],
 
   })  :
         closureDate = closureDate ?? Timestamp.now(),
         statusChange = statusChange ?? Timestamp.now(),
-        super(            creationDate: (creationDate).toDate(),
+        super(
+            creationDate: (creationDate).toDate(),
             updateAt: (updateAt).toDate(),
             reviews: reviews ?? const ReviewsModel(id: '', rating: 0.0, reviewQuantity: 0),
             location: location ?? const LocationModel(),
-            pictures: pictures,
             tags: tag,
-            amenities: ammenities,
-            roomateProfile: roomateProfile);
+            amenities: ammenities);
 
   factory HousingPostModel.fromMap(Map<String, dynamic> data, {String? documentId}) {
-    String? extractReviewsPath(dynamic reviewsField) {
-      if (reviewsField is String) {
-        return reviewsField;
-      }
-      if (reviewsField is DocumentReference) {
-        return reviewsField.path;
+    // Helper to extract a string path/id from different possible stored types
+    String? extractStringFromReference(dynamic value) {
+      if (value == null) return null;
+      // If it's already a string
+      if (value is String) return value;
+      // If it's a DocumentReference from Firestore
+      if (value is DocumentReference) return value.path;
+      // If it's a JSON representation of a reference (e.g. _JsonDocumentReference)
+      if (value is Map) {
+        if (value.containsKey('path') && value['path'] is String) {
+          return value['path'] as String;
+        }
+        if (value.containsKey('_referencePath') && value['_referencePath'] is String) {
+          return value['_referencePath'] as String;
+        }
+        // Some serialized references store 'id' or 'documentId'
+        if (value.containsKey('id') && value['id'] is String) {
+          return value['id'] as String;
+        }
       }
       return null;
     }
+
+    final dynamic hostField = data['host'];
+    final dynamic reviewsField = data['reviews'];
+
+    final hostString = extractStringFromReference(hostField) ?? (hostField?.toString() ?? "");
+    final reviewsPathString = extractStringFromReference(reviewsField);
+
     return HousingPostModel(
       id: documentId ?? data['id'] ?? "",
       creationDate: data['creationDate'] ?? Timestamp.now(),
@@ -75,9 +94,9 @@ class HousingPostModel extends HousingPostEntity {
           ? LocationModel.fromMap(data['location'])
           : const LocationModel(),
       thumbnail: data['thumbnail'] ?? "",
-      host: data['host'] ?? "",
-      reviewsPath: extractReviewsPath(data['reviews']),
-      bookingDates: data['bookingDates']?.toString() ?? "",
+      host: hostString,
+      reviewsPath: reviewsPathString,
+      bookingDates: data['bookingDates'] ?? "",
       pictures: (data['Pictures'] as List<dynamic>?)
               ?.map((e) => PictureModel.fromMap(e))
               .toList() ??
@@ -139,8 +158,8 @@ class HousingPostModel extends HousingPostEntity {
     reviewsPath: reviewsPath ?? this.reviewsPath,
     bookingDates: bookingDates ?? this.bookingDates,
     pictures: pictures ?? (this.pictures as List<PictureModel>),
-    tag: tag ?? this.tags as List<TagHousingPostModel>,
-    ammenities: ammenities ?? this.amenities as List<AmenityModel>,
+    tag: tag ?? tags as List<TagHousingPostModel>,
+    ammenities: ammenities ?? amenities as List<AmenityModel>,
     roomateProfile: roomateProfile ?? this.roomateProfile as List<RoomateProfileModel>,
   );
 }
