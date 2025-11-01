@@ -48,7 +48,7 @@ class MapSearchPage extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: MapSectionWidget(),
               ),
-              Expanded(
+              const Expanded(
                 child: HousingListWidget(),
               ),
             ],

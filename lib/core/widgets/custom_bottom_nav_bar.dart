@@ -49,8 +49,8 @@ class CustomBottomNavBar extends StatelessWidget {
         if (index == 3) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => MapSearchProvider(
-              child: const MapSearchPage(),
+            MaterialPageRoute(builder: (context) => const MapSearchProvider(
+              child: MapSearchPage(),
             )),
           );
         }

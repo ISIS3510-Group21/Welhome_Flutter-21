@@ -1,56 +1,102 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:welhome/features/filter/data/models/property_model.dart';
+import 'package:welhome/features/filter/data/services/property_cache_service.dart';
 
 class PropertyRemoteDataSource {
   final FirebaseFirestore _firestore;
+  final PropertyCacheService _cacheService;
   
-  PropertyRemoteDataSource({FirebaseFirestore? firestore}) 
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  PropertyRemoteDataSource({
+    FirebaseFirestore? firestore,
+    required PropertyCacheService cacheService,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _cacheService = cacheService;
       
-  Future<List<PropertyModel>> getProperties({
+  Future<(List<PropertyModel>, DocumentSnapshot?)> getProperties({
     List<String>? selectedAmenities,
     List<String>? selectedHousingTags,
+    DocumentSnapshot? lastDocument,
+    int pageSize = 20,
   }) async {
     try {
-      print('Fetching properties...');
+      // Try to get filtered properties from cache first if no lastDocument (first page)
+      if (lastDocument == null && 
+          (selectedAmenities?.isNotEmpty == true || selectedHousingTags?.isNotEmpty == true)) {
+        final cachedProperties = await _cacheService.filterCachedProperties(
+          selectedAmenities: selectedAmenities,
+          selectedHousingTags: selectedHousingTags,
+        );
+        if (cachedProperties.isNotEmpty) {
+          print('Returning filtered properties from cache');
+          return (cachedProperties.take(pageSize).toList(), null);
+        }
+      }
+      
+      print('Fetching properties from Firestore... Page size: $pageSize');
       print('Selected amenities: $selectedAmenities');
       print('Selected housing tags: $selectedHousingTags');
 
-      QuerySnapshot housingSnapshot;
+      Query query = _firestore.collection('HousingPost');
 
+      // Si hay filtros de amenidades, necesitamos cargar todos los posts y filtrar manualmente
+      // ya que las amenidades están en una subcolección
       if (selectedAmenities?.isNotEmpty == true) {
         try {
-          final amenityQuery = await _firestore
-              .collectionGroup('Amenities')
-              .where('name', whereIn: selectedAmenities)
-              .get();
+          // Obtener los primeros 50 posts (ajusta este número según necesidad)
+          final QuerySnapshot initialHousingSnapshot = await query.limit(50).get();
+          final matchingPostIds = <String>{};
 
-          final postIds = amenityQuery.docs
-              .map((doc) => doc.reference.parent.parent?.id)
-              .where((id) => id != null)
-              .cast<String>()
-              .toSet();
+          // Para cada post, cargar y verificar sus amenidades
+          for (var doc in initialHousingSnapshot.docs) {
+            // Cargar todas las amenidades del post
+            final amenitiesSnapshot = await doc.reference.collection('Amenities').get();
+            if (amenitiesSnapshot.docs.isEmpty) {
+              print('No amenities found for post ${doc.id}');
+              continue;
+            }
 
-          if (postIds.isEmpty) {
-            print('No matching posts found for amenities');
-            return [];
+            // Extraer los nombres de las amenidades
+            final postAmenities = amenitiesSnapshot.docs
+                .map((amenityDoc) => amenityDoc.data()['name'] as String?)
+                .where((name) => name != null)
+                .cast<String>()
+                .toSet();
+
+            print('Post ${doc.id} has amenities: $postAmenities');
+
+            // Verificar si el post tiene TODAS las amenidades seleccionadas
+            if (selectedAmenities!.every((amenity) => 
+                postAmenities.any((postAmenity) => 
+                    postAmenity.toLowerCase() == amenity.toLowerCase()))) {
+              print('Post ${doc.id} matches all selected amenities');
+              matchingPostIds.add(doc.id);
+            }
           }
 
-          print('Found ${postIds.length} posts with matching amenities');
-          housingSnapshot = await _firestore
-              .collection('HousingPost')
-              .where(FieldPath.documentId, whereIn: postIds.take(10).toList())
-              .get();
+          if (matchingPostIds.isEmpty) {
+            print('No posts found matching all selected amenities: $selectedAmenities');
+            return (List<PropertyModel>.empty(), null);
+          }
+
+          print('Found ${matchingPostIds.length} posts matching all amenities');
+          
+          // Actualizar la consulta para obtener solo los posts que coinciden
+          query = _firestore.collection('HousingPost')
+              .where(FieldPath.documentId, whereIn: matchingPostIds.toList());
         } catch (e) {
-          print('CollectionGroup query failed, falling back to simple query: $e');
-          housingSnapshot =
-              await _firestore.collection('HousingPost').limit(10).get();
+          print('Failed to query amenities: $e');
+          return (List<PropertyModel>.empty(), null);
         }
-      } else {
-        housingSnapshot =
-            await _firestore.collection('HousingPost').limit(10).get();
       }
 
+      // Añadir paginación
+      if (lastDocument != null) {
+        query = query.startAfterDocument(lastDocument);
+      }
+      
+      query = query.limit(pageSize);
+      
+      final QuerySnapshot housingSnapshot = await query.get();
       print('Processing ${housingSnapshot.docs.length} housing posts');
       List<PropertyModel> properties = [];
 
@@ -63,8 +109,13 @@ class PropertyRemoteDataSource {
 
           // Load amenities
           try {
-            final amenitiesSnapshot =
-                await doc.reference.collection('Amenities').get();
+            final amenitiesSnapshot = await doc.reference.collection('Amenities').get();
+            final amenities = amenitiesSnapshot.docs
+                .map((doc) => doc.data()['name'] as String?)
+                .where((name) => name != null)
+                .cast<String>()
+                .toList();
+
             property = PropertyModel(
               id: property.id,
               title: property.title,
@@ -77,18 +128,19 @@ class PropertyRemoteDataSource {
               location: property.location,
               host: property.host,
               closureDate: property.closureDate,
-              amenities: amenitiesSnapshot.docs
-                  .map((doc) => doc.data()['name'] as String?)
-                  .where((name) => name != null)
-                  .cast<String>()
-                  .toList(),
+              amenities: amenities,
               housingTags: property.housingTags,
               pictures: property.pictures,
             );
 
-            if (selectedAmenities?.isNotEmpty == true &&
-                !property.amenities.any((a) => selectedAmenities!.contains(a))) {
-              continue;
+            // Solo verificar las amenidades si no se hizo en la consulta inicial
+            if (selectedAmenities?.isNotEmpty == true && lastDocument != null) {
+              final hasAllAmenities = selectedAmenities!.every((amenity) =>
+                  amenities.any((a) => a.toLowerCase() == amenity.toLowerCase()));
+              if (!hasAllAmenities) {
+                print('Post ${doc.id} missing some selected amenities');
+                continue;
+              }
             }
           } catch (e) {
             print('Error loading amenities for ${doc.id}: $e');
@@ -168,11 +220,21 @@ class PropertyRemoteDataSource {
         }
       }
 
+      DocumentSnapshot? lastVisibleDoc = housingSnapshot.docs.isEmpty ? null : housingSnapshot.docs.last;
       print('Retrieved ${properties.length} matching properties');
-      return properties;
+      
+      // Cache properties if this is the first page and no filters are applied
+      if (lastDocument == null && 
+          selectedAmenities?.isEmpty != false && 
+          selectedHousingTags?.isEmpty != false) {
+        await _cacheService.cacheProperties(properties);
+        print('Cached ${properties.length} properties');
+      }
+      
+      return (properties, lastVisibleDoc);
     } catch (e) {
       print('Error in getProperties: $e');
-      return [];
+      return (List<PropertyModel>.empty(), null);
     }
   }
 

@@ -77,7 +77,7 @@ class _HousingListWidgetState extends State<HousingListWidget> {
         final allKeys = _itemKeys.keys.toList();
         final index = allKeys.indexOf(postId);
         if (index >= 0 && _scrollController.hasClients) {
-          final estimatedExtent = 180.0; // conservative estimate
+          const estimatedExtent = 180.0; // conservative estimate
           _scrollController.animateTo(
             index * estimatedExtent,
             duration: const Duration(milliseconds: 350),
@@ -194,7 +194,7 @@ class _HousingListWidgetState extends State<HousingListWidget> {
       final post = posts[index];
       final key = _itemKeys.putIfAbsent(post.id, () => GlobalKey());
 
-      final hasNetworkImage = post.thumbnail != null && post.thumbnail!.isNotEmpty;
+      final hasNetworkImage = post.thumbnail.isNotEmpty;
       final placeholderAsset = defaultPlaceholders[random.nextInt(defaultPlaceholders.length)];
 
       return Column(
@@ -204,11 +204,9 @@ class _HousingListWidgetState extends State<HousingListWidget> {
             title: post.title,
             rating: post.rating,
             price: "\$${post.price.toInt()} /month",
-            imageUrl: hasNetworkImage ? post.thumbnail! : null,
+            imageUrl: hasNetworkImage ? post.thumbnail : null,
             placeholderAsset: placeholderAsset,
-            subtitle: post.formattedDistance != null
-                ? "${post.formattedDistance} away"
-                : null,
+            subtitle: "${post.formattedDistance} away",
             onTap: () {
               context.read<MapSearchCubit>().selectPost(post.id);
 

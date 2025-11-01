@@ -27,7 +27,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.example.welhome"
-    compileSdk 35
+    compileSdk 36
     ndkVersion "25.1.8937393"
 
     compileOptions {
@@ -46,7 +46,7 @@ android {
     defaultConfig {
         applicationId "com.example.welhome"
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode 1
         versionName "1.0"
     }

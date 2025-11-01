@@ -10,12 +10,12 @@ class MapSearchCubit extends Cubit<MapSearchState> {
   MapSearchCubit(this._housingRepository) : super(MapSearchInitial());
 
   Future<void> getUserLocation() async {
-    emit(MapSearchLoadingLocation());
+    emit(const MapSearchLoadingLocation());
     
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        emit(MapSearchError(
+        emit(const MapSearchError(
           message: 'Location services are disabled. Please enable them to find nearby accommodations.',
         ));
         return;
@@ -25,7 +25,7 @@ class MapSearchCubit extends Cubit<MapSearchState> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          emit(MapSearchError(
+          emit(const MapSearchError(
             message: 'Location permissions are required to find accommodations near you.',
             canRetry: false,
           ));
@@ -34,7 +34,7 @@ class MapSearchCubit extends Cubit<MapSearchState> {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        emit(MapSearchError(
+        emit(const MapSearchError(
           message: 'Location permissions are permanently denied. Please enable them in your device settings.',
           canRetry: false,
         ));

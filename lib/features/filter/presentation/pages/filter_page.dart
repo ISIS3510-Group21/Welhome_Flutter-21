@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:welhome/core/constants/app_text_styles.dart';
-import 'package:welhome/core/widgets/app_search_bar.dart';
-import 'package:welhome/core/widgets/custom_bottom_nav_bar.dart';
-import 'package:welhome/core/constants/app_colors.dart';
-import 'package:welhome/core/widgets/category_card.dart';
+import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:welhome/core/widgets/filter_list_item.dart';
+import 'package:welhome/features/filter/presentation/bloc/filter_bloc.dart';
+import 'package:welhome/features/filter/presentation/bloc/filter_event.dart';
+import 'package:welhome/features/filter/presentation/bloc/filter_state.dart';
 import 'package:welhome/core/widgets/filter_chip_custom.dart';
-import 'package:welhome/core/widgets/product_card.dart';
-import 'package:welhome/features/filter/data/services/property_service.dart';
-import 'package:welhome/features/filter/domain/entities/property.dart';
+import 'package:welhome/features/filter/domain/usecases/get_properties_usecase.dart';
+import 'package:welhome/features/filter/domain/usecases/get_all_tags_usecase.dart';
 
 class FilterPage extends StatefulWidget {
   const FilterPage({super.key});
@@ -18,224 +19,184 @@ class FilterPage extends StatefulWidget {
 }
 
 class _FilterPageState extends State<FilterPage> {
-  final PropertyService _propertyService = PropertyService();
-  List<Property> _properties = [];
-  final List<String> _selectedAmenities = [];
-  final List<String> _selectedHousingTags = [];
-  Map<String, dynamic> _availableTags = {
-    'amenities': <dynamic>[],
-    'housingTags': <dynamic>[],
-  };
+  bool _isOffline = true;
+  final Set<String> _selectedAmenities = {};
+  late final FilterBloc _filterBloc;
 
   @override
   void initState() {
     super.initState();
-    _loadInitialData();
+    _checkConnectivity();
+    _setupConnectivityListener();
+    _initializeBloc();
   }
 
-  Future<void> _loadInitialData() async {
-    final tags = await _propertyService.getAllTags();
-    final properties = await _propertyService.getProperties();
-
-    setState(() {
-      _availableTags = tags;
-      _properties = properties;
-    });
-  }
-
-  void _updateFilters() async {
-    final filteredProperties = await _propertyService.getProperties(
-      selectedAmenities: _selectedAmenities,
-      selectedHousingTags: _selectedHousingTags,
+  void _initializeBloc() {
+    _filterBloc = FilterBloc(
+      getPropertiesUseCase: GetIt.I<GetPropertiesUseCase>(),
+      getAllTagsUseCase: GetIt.I<GetAllTagsUseCase>(),
     );
+    _filterBloc.add(LoadInitialProperties());
+  }
 
-    setState(() {
-      _properties = filteredProperties;
+  void _setupConnectivityListener() {
+    Connectivity().onConnectivityChanged.listen((result) {
+      setState(() {
+        _isOffline = result == ConnectivityResult.none;
+      });
     });
   }
 
-  void _toggleHousingTag(String tag) {
-    setState(() {
-      if (_selectedHousingTags.contains(tag)) {
-        _selectedHousingTags.remove(tag);
-      } else {
-        _selectedHousingTags.add(tag);
-      }
-    });
-    _updateFilters();
-  }
-
-  void _toggleAmenity(String amenity) {
-    setState(() {
-      if (_selectedAmenities.contains(amenity)) {
-        _selectedAmenities.remove(amenity);
-      } else {
-        _selectedAmenities.add(amenity);
-      }
-    });
-    _updateFilters();
-  }
-
-  IconData _getIconForHousingType(String type) {
-    switch (type) {
-      case 'House':
-        return Icons.house_rounded;
-      case 'Room':
-        return Icons.meeting_room_rounded;
-      case 'Cabin':
-        return Icons.cabin_rounded;
-      case 'Apartment':
-        return Icons.apartment_rounded;
-      default:
-        return Icons.home_rounded;
+  Future<void> _checkConnectivity() async {
+    try {
+      final result = await Connectivity().checkConnectivity();
+      setState(() {
+        _isOffline = result == ConnectivityResult.none;
+      });
+    } catch (e) {
+      debugPrint('Error checking connectivity: $e');
+      setState(() => _isOffline = true);
     }
   }
 
   @override
+  void dispose() {
+    _filterBloc.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return BlocProvider(
+      create: (context) => _filterBloc,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          title: const Text('Filtros', style: TextStyle(color: Colors.black)),
+        ),
+        body: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const AppSearchBar(),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Filters',
-                    style: AppTextStyles.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        // Housing Type Filters
-                        ...(_availableTags['housingTags'] as List<dynamic>? ?? [])
-                            .map((tag) => Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: FilterChipCustom(
-                                    label: tag.toString(),
-                                    icon: _getIconForHousingType(tag.toString()),
-                                    isSelected: _selectedHousingTags.contains(tag),
-                                    onTap: () => _toggleHousingTag(tag.toString()),
-                                  ),
-                                ))
-                            .toList(),
-                        // Separator
-                        if ((_availableTags['housingTags'] as List<dynamic>? ?? []).isNotEmpty &&
-                            (_availableTags['amenities'] as List<dynamic>? ?? []).isNotEmpty)
-                          Container(
-                            height: 32,
-                            width: 1,
-                            color: AppColors.coolGray.withOpacity(0.3),
-                            margin: const EdgeInsets.symmetric(horizontal: 8),
-                          ),
-                        // Amenity Filters
-                        ...(_availableTags['amenities'] as List<dynamic>? ?? [])
-                            .map((amenity) => Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: FilterChipCustom(
-                                    label: amenity.toString(),
-                                    isSelected: _selectedAmenities.contains(amenity),
-                                    onTap: () => _toggleAmenity(amenity.toString()),
-                                  ),
-                                ))
-                            .toList(),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            if (_isOffline)
+              Container(
+                width: double.infinity,
+                color: Colors.orange,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                child: const Row(
                   children: [
-                    // Property Results
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _properties.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 16),
-                        itemBuilder: (context, index) {
-                          final property = _properties[index];
-                          return SizedBox(
-                            width: double.infinity,
-                            child: ProductCard(
-                              imageUrl: property.pictures.isNotEmpty
-                                  ? property.pictures.first
-                                  : 'https://via.placeholder.com/300x200',
-                              title: property.title,
-                              rating: property.rating,
-                              reviews:
-                                  0, // TODO: Agregar reviews cuando estén disponibles
-                              price: '\$${property.price.toStringAsFixed(2)}',
-                              onTap: () {},
-                            ),
-                          );
-                        },
+                    Icon(Icons.wifi_off, color: Colors.white),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Sin conexión - Mostrando datos almacenados',
+                        style: TextStyle(color: Colors.white),
                       ),
                     ),
-                    const SizedBox(height: 24),
                   ],
                 ),
+              ),
+            Expanded(
+              child: BlocBuilder<FilterBloc, FilterState>(
+                builder: (context, state) {
+                  if (state is FilterLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (state is FilterLoaded) {
+                    final amenities =
+                        state.availableTags['amenities'] as List<String>? ?? [];
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Sección de Amenidades
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Text(
+                            'Amenidades',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 50,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: amenities.length,
+                            itemBuilder: (context, index) {
+                              final amenity = amenities[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: FilterChipCustom(
+                                  label: amenity,
+                                  isSelected:
+                                      _selectedAmenities.contains(amenity),
+                                  onTap: () {
+                                    setState(() {
+                                      if (_selectedAmenities
+                                          .contains(amenity)) {
+                                        _selectedAmenities.remove(amenity);
+                                      } else {
+                                        _selectedAmenities.add(amenity);
+                                      }
+                                    });
+
+                                    _filterBloc.add(UpdateFilters(
+                                      selectedAmenities:
+                                          _selectedAmenities.toList(),
+                                      selectedHousingTags: const [],
+                                    ));
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Lista de Posts Filtrados
+                        Expanded(
+                          child: state.properties.isEmpty
+                              ? const Center(
+                                  child: Text('No se encontraron propiedades'),
+                                )
+                              : ListView.separated(
+                                  padding: const EdgeInsets.all(16),
+                                  itemCount: state.properties.length,
+                                  separatorBuilder: (context, index) =>
+                                      const SizedBox(height: 16),
+                                  itemBuilder: (context, index) {
+                                    final property = state.properties[index];
+                                    return FilterListItem(
+                                      property: property,
+                                      onTap: () {
+                                        Navigator.of(context).pushNamed(
+                                          '/property-detail',
+                                          arguments: property.id,
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  return const SizedBox.shrink();
+                },
               ),
             ),
           ],
         ),
-      ),
-
-      // 🔹 Botón Map Search fijo abajo
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-            child: SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.violetBlue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-                onPressed: () {
-                  debugPrint("Navegar a Map Search");
-                },
-                child: Text(
-                  'Map Search',
-                  style: GoogleFonts.poppins(
-                    color: AppColors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // 🔹 Bottom Nav fijo
-          CustomBottomNavBar(
-            currentIndex: 0,
-            onTap: (index) {
-              debugPrint("Navegaste al índice $index");
-            },
-          ),
-        ],
       ),
     );
   }

@@ -26,10 +26,10 @@ class HousingDetailHost extends StatelessWidget {
               Container(
                 width: 40,
                 height: 40,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   image: DecorationImage(
-                    image: const AssetImage('lib/assets/images/profile_pic_owner.png'),
+                    image: AssetImage('lib/assets/images/profile_pic_owner.png'),
                     fit: BoxFit.cover,
                   ),
                 ),
