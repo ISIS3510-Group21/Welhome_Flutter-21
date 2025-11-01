@@ -45,8 +45,8 @@ android {
 
     defaultConfig {
         applicationId "com.example.welhome"
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion 36
+        minSdkVersion 23
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
     }

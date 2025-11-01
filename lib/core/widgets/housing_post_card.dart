@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:welhome/core/data/models/housing_post.dart';
+import 'package:welhome/features/housing/domain/entities/housing_post_entity.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
 
 class HousingPostCard extends StatelessWidget {
-  final HousingPost post;
+  final HousingPostEntity post;
   final VoidCallback? onTap;
 
   const HousingPostCard({
@@ -69,14 +69,14 @@ class HousingPostCard extends StatelessWidget {
                       const Icon(Icons.star, color: AppColors.black, size: 18),
                       const SizedBox(width: 4),
                       Text(
-                        post.rating.toStringAsFixed(2),
+                        post.reviews.rating.toStringAsFixed(2),
                         style: AppTextStyles.textRegular.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        '4 reviews',
+                        '${post.reviews.reviewQuantity} reviews',
                         style: AppTextStyles.textSmall.copyWith(
                           color: AppColors.coolGray,
                         ),
@@ -97,4 +97,3 @@ class HousingPostCard extends StatelessWidget {
     );
   }
 }
-
