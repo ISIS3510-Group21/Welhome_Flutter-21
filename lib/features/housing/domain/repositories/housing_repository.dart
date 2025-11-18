@@ -20,4 +20,8 @@ abstract class HousingRepository {
     required double radiusInKm,
   });
 
+  Future<List<HousingPostEntity>> getAllHousingPosts();
+
+  Future<List<HousingPostEntity>> getAllAvailableHousingPosts();
+
 }

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:welhome/features/home/presentation/pages/home_page.dart';
-import 'package:welhome/features/map_search/presentation/widgets/map_search_provider.dart';
+import 'package:welhome/features/housing/data/repositories/housing_repository_impl.dart';
+import 'package:welhome/features/housing/data/repositories/reviews_repository_impl.dart';
+import 'package:welhome/features/housing/data/repositories/student_user_profile_repository_impl.dart';
+import 'package:welhome/features/map_search/presentation/cubit/map_search_cubit.dart';
 import 'package:welhome/features/map_search/presentation/pages/map_search_page.dart';
 import 'package:welhome/features/filter/presentation/pages/filter_page.dart';
 import 'package:welhome/features/post/presentation/pages/create_post_page.dart';
@@ -37,21 +42,33 @@ class CustomBottomNavBar extends StatelessWidget {
         if (index == 1) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const CreateHousingPostPage()),
+            MaterialPageRoute(builder: (context) => const SavedPage()),
           );
         }
         if (index == 2) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const FilterPage()),
+            MaterialPageRoute(builder: (context) => const CreateHousingPostPage()),
           );
         }
         if (index == 3) {
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const MapSearchProvider(
-              child: MapSearchPage(),
-            )),
+            MaterialPageRoute(builder: (context) {
+              // 1. Crear Repositorios
+              final reviewsRepository = ReviewsRepositoryImpl(FirebaseFirestore.instance);
+              final housingRepository = HousingRepositoryImpl(
+                FirebaseFirestore.instance,
+                StudentUserProfileRepositoryImpl(FirebaseFirestore.instance),
+                reviewsRepository,
+              );
+
+              // 2. Proveer el Cubit a la página del mapa
+              return BlocProvider(
+                create: (context) => MapSearchCubit(housingRepository: housingRepository)..loadProperties(),
+                child: const MapSearchPage(),
+              );
+            }),
           );
         }
         if (index == 4) {
@@ -90,14 +107,14 @@ class CustomBottomNavBar extends StatelessWidget {
           label: "Saved",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.forum_outlined),
-          activeIcon: Icon(Icons.forum),
-          label: "Forum",
+          icon: Icon(Icons.add_circle_outline),
+          activeIcon: Icon(Icons.add_circle),
+          label: "Post",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_month_outlined),
-          activeIcon: Icon(Icons.calendar_month),
-          label: "Visits",
+          icon: Icon(Icons.map_outlined),
+          activeIcon: Icon(Icons.map),
+          label: "Map",
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
