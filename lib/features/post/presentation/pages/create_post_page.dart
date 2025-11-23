@@ -8,6 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:welhome/core/constants/app_colors.dart';
 import 'package:welhome/core/constants/app_text_styles.dart';
+import 'package:welhome/core/data/local/draft_post_manager.dart';
+import 'package:welhome/core/data/models/draft_post.dart';
+import 'package:welhome/core/services/connectivity_service.dart';
+import 'package:welhome/core/services/draft_post_sync_service.dart';
+import 'package:uuid/uuid.dart';
+import 'dart:developer' as developer;
 
 class CreateHousingPostPage extends StatefulWidget {
   const CreateHousingPostPage({super.key});
@@ -41,11 +47,44 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
   // Image picker
   final ImagePicker _picker = ImagePicker();
 
+  // Eventual Connectivity
+  late DraftPostManager _draftManager;
+  late DraftPostSyncService _syncService;
+  late ConnectivityService _connectivityService;
+  bool _isOnline = true;
+
   @override
   void initState() {
     super.initState();
+    _initializeServices();
     _loadAmenities();
     _loadHousingTags();
+  }
+
+  Future<void> _initializeServices() async {
+    try {
+      _draftManager = DraftPostManager();
+      await _draftManager.initialize();
+
+      _connectivityService = ConnectivityService();
+      _syncService = DraftPostSyncService(
+        draftManager: _draftManager,
+        connectivityService: _connectivityService,
+      );
+
+      // Iniciar sincronización automática
+      _syncService.startAutoSync();
+
+      // Monitorear cambios de conectividad
+      _connectivityService.connectivityStream.listen((isOnline) {
+        setState(() => _isOnline = isOnline);
+      });
+
+      developer.log('Services initialized');
+    } catch (e) {
+      developer.log('Error initializing services: $e');
+      _showErrorMessage('Error initializing app: $e');
+    }
   }
 
   @override
@@ -133,75 +172,127 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
     setState(() => _loading = true);
 
     try {
+      if (_isOnline) {
+        // Online: subir directamente a Firebase
+        await _uploadToFirebase();
+      } else {
+        // Offline: guardar como borrador
+        await _saveDraft();
+      }
+    } catch (e) {
+      developer.log('Error saving post: $e');
+      if (mounted) {
+        _showErrorMessage('Error al guardar publicación: ${e.toString()}');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    try {
+      final draftId = const Uuid().v4();
+      final imagePaths = <String>[];
+
+      // Guardar imágenes localmente
+      if (_mainPhoto != null) {
+        imagePaths.add(_mainPhoto!.path);
+      }
+      imagePaths.addAll(_otherPhotos.map((x) => x.path));
+
+      final draft = DraftPost(
+        id: draftId,
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        address: _addressController.text.trim(),
+        price: double.tryParse(
+              _priceController.text.replaceAll(',', '').trim(),
+            ) ??
+            0,
+        housingTagId: _selectedHousingTagId,
+        amenityIds: _selectedAmenityIds.toList(),
+        localImagePaths: imagePaths,
+        createdAt: DateTime.now(),
+        lastModifiedAt: DateTime.now(),
+      );
+
+      await _draftManager.saveDraft(draft);
+
+      if (mounted) {
+        _showSuccessMessage(
+          'Se guardó la publicación para ser enviada cuando se recupere conexión',
+        );
+        _clearForm();
+      }
+
+      developer.log('Draft saved: $draftId');
+    } catch (e) {
+      developer.log('Error saving draft: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> _uploadToFirebase() async {
+    try {
+      _showSyncMessage('Publicando post...');
+
       final firestore = FirebaseFirestore.instance;
       final auth = FirebaseAuth.instance;
       final user = auth.currentUser;
+
       if (user == null) {
         throw Exception('User not authenticated');
       }
 
-      // Prepare new doc ref (we need the id for storage paths)
       final docRef = firestore.collection('HousingPost').doc();
       final postId = docRef.id;
 
-      // Parse price
-      final price = double.tryParse(_priceController.text.replaceAll(',', '').trim()) ?? 0;
+      final price = double.tryParse(
+            _priceController.text.replaceAll(',', '').trim(),
+          ) ??
+          0;
 
-      // Build base post data
-      final Map<String, dynamic> postData = {
+      final postData = {
         'id': postId,
         'title': _titleController.text.trim(),
         'description': _descriptionController.text.trim(),
         'address': _addressController.text.trim(),
         'price': price,
         'host': user.uid,
-        // optional / initially empty:
         'closureDate': null,
         'creationDate': FieldValue.serverTimestamp(),
-        'location': {}, // left empty map for now
+        'location': {},
         'rating': null,
         'status': null,
         'statusChange': null,
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      // 1) Create the main document (we put the base data first)
       await docRef.set(postData);
 
-      // 2) Save selected housing tag in subcollection 'Tag'
-      // Try find tag doc data from loaded list
-      final selectedTagDoc =
-          _housingTags.firstWhere((t) => t['id'] == _selectedHousingTagId, orElse: () => {});
-      if (selectedTagDoc.isNotEmpty) {
-        await docRef.collection('Tag').doc(_selectedHousingTagId).set({
-          'id': _selectedHousingTagId,
-          'name': selectedTagDoc['name'] ?? _selectedHousingTagId,
-        });
-      } else {
-        // If not found, still create a minimal doc
+      // Guardar tag
+      if (_selectedHousingTagId != null) {
         await docRef.collection('Tag').doc(_selectedHousingTagId).set({
           'id': _selectedHousingTagId,
           'name': _selectedHousingTagId,
         });
       }
 
-      // 3) Save selected amenities as subcollection 'Amenities'
-      for (final amenity in _amenities) {
-        final id = amenity['id'] as String;
-        if (_selectedAmenityIds.contains(id)) {
-          await docRef.collection('Amenities').doc(id).set({
-            'id': id,
-            'name': amenity['name'] ?? id,
-          });
-        }
+      // Guardar amenities
+      for (final amenityId in _selectedAmenityIds) {
+        final amenity =
+            _amenities.firstWhere((a) => a['id'] == amenityId, orElse: () => {});
+        await docRef.collection('Amenities').doc(amenityId).set({
+          'id': amenityId,
+          'name': amenity['name'] ?? amenityId,
+        });
       }
 
-      // 4) Upload pictures to Firebase Storage and add subcollection 'Pictures'
+      // Subir imágenes
       final storage = FirebaseStorage.instance;
-      final List<Map<String, String>> uploadedPictures = [];
-
-      // Build a combined list where mainPhoto goes first (if exists)
-      final List<XFile> allPhotos = [];
+      final allPhotos = <XFile>[];
       if (_mainPhoto != null) allPhotos.add(_mainPhoto!);
       allPhotos.addAll(_otherPhotos);
 
@@ -209,44 +300,34 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
         final xfile = allPhotos[i];
         final file = File(xfile.path);
 
-        final storagePath = 'images/housing/${postId}_$i${_getFileExtension(xfile.path)}';
+        final storagePath =
+            'images/housing/${postId}_$i${_getFileExtension(xfile.path)}';
         final ref = storage.ref().child(storagePath);
 
         final uploadTask = ref.putFile(file);
         final snapshot = await uploadTask;
-        // Optionally you can get downloadURL:
         final downloadUrl = await snapshot.ref.getDownloadURL();
 
-        // create record in subcollection
         final picDoc = docRef.collection('Pictures').doc();
-        final picData = {
+        await picDoc.set({
           'id': picDoc.id,
           'photoPath': storagePath,
           'name': xfile.name,
           'downloadUrl': downloadUrl,
-        };
-        await picDoc.set(picData);
-        uploadedPictures.add({'id': picDoc.id, 'path': storagePath});
+        });
       }
 
-      // 5) Update updatedAt in main doc (already set at creation but keep consistent)
       await docRef.update({'updatedAt': FieldValue.serverTimestamp()});
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Housing post created successfully')),
-        );
-        // Optionally clear the form or navigate away:
+        _showSuccessMessage('Publicación creada exitosamente');
         _clearForm();
       }
+
+      developer.log('Post uploaded successfully');
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error creating post: ${e.toString()}')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _loading = false);
+      developer.log('Error uploading to Firebase: $e');
+      rethrow;
     }
   }
 
@@ -268,6 +349,39 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
     setState(() {});
   }
 
+  void _showSuccessMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _showErrorMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _showSyncMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.blue,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   Widget _buildHousingTagButtons() {
     // We want specifically these 4 tags (IDs): HousingTag1, HousingTag2, HousingTag4, HousingTag11
     final wanted = ['HousingTag1', 'HousingTag2', 'HousingTag4', 'HousingTag11'];
@@ -283,7 +397,7 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           decoration: BoxDecoration(
-            color: selected ? AppColors.violetBlue.withOpacity(0.15) : Colors.transparent,
+            color: selected ? AppColors.violetBlue.withValues(alpha: 0.15) : Colors.transparent,
             border: Border.all(color: AppColors.violetBlue, width: 2),
             borderRadius: BorderRadius.circular(8),
           ),
@@ -322,6 +436,61 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Banner de estado de conectividad
+              if (!_isOnline)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.2),
+                    border: Border.all(color: Colors.orange, width: 1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.wifi_off, color: Colors.orange),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Modo offline: Se guardará como borrador',
+                          style: AppTextStyles.textSmall.copyWith(
+                            color: Colors.orange[800],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if (_syncService.isSyncing && _isOnline)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.2),
+                    border: Border.all(color: Colors.blue, width: 1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(Colors.blue),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Sincronizando borradores...',
+                          style: AppTextStyles.textSmall
+                              .copyWith(color: Colors.blue[800]),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               // Title
               Text('Title', style: AppTextStyles.tittleSmall),
               const SizedBox(height: 6),
@@ -440,7 +609,7 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
                                 }
                               });
                             },
-                            selectedColor: AppColors.violetBlue.withOpacity(0.15),
+                            selectedColor: AppColors.violetBlue.withValues(alpha: 0.15),
                             backgroundColor: AppColors.lavenderLight,
                             labelStyle: AppTextStyles.textRegular.copyWith(
                               color: selected ? AppColors.violetBlue : Colors.black,
