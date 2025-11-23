@@ -1,11 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:welhome/features/housing/domain/entities/reviews_entity.dart';
-
-import 'amenity_entity.dart';
-import 'location_entity.dart';
-import 'picture_entity.dart';
-import 'roomate_profile_entity.dart';
-import 'tag_housing_post_entity.dart';
+import 'package:welhome/features/housing/domain/entities/amenity_entity.dart';
+import 'package:welhome/features/housing/domain/entities/location_entity.dart';
+import 'package:welhome/features/housing/domain/entities/picture_entity.dart';
+import 'package:welhome/features/housing/domain/entities/roomate_profile_entity.dart';
+import 'package:welhome/features/housing/domain/entities/tag_housing_post_entity.dart';
 
 class HousingPostEntity extends Equatable {
   final String id;
@@ -49,5 +48,24 @@ class HousingPostEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, title, host, price];
+  List<Object?> get props => [
+    id, 
+    creationDate, 
+    updateAt, 
+    address, 
+    price, 
+    rating, 
+    reviews, 
+    title, 
+    status, 
+    description, 
+    location, 
+    thumbnail, 
+    host, 
+    bookingDates, 
+    pictures, 
+    tags, 
+    amenities, 
+    roomateProfile
+  ];
 }

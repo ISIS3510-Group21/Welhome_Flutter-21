@@ -31,12 +31,15 @@ class CustomBottomNavBar extends StatelessWidget {
       onTap: (index) {
         // Llama primero al callback original
         onTap(index);
-        
+
         // Navegación simple sin remover páginas
         if (index == 0) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const HomePage(userId: 'Profile_Student10',)),
+            MaterialPageRoute(
+                builder: (context) => const HomePage(
+                      userId: 'Profile_Student10',
+                    )),
           );
         }
         if (index == 1) {
@@ -48,39 +51,27 @@ class CustomBottomNavBar extends StatelessWidget {
         if (index == 2) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const CreateHousingPostPage()),
+            MaterialPageRoute(
+                builder: (context) => const CreateHousingPostPage()),
           );
         }
         if (index == 3) {
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) {
-              // 1. Crear Repositorios
-              final reviewsRepository = ReviewsRepositoryImpl(FirebaseFirestore.instance);
-              final housingRepository = HousingRepositoryImpl(
-                FirebaseFirestore.instance,
-                StudentUserProfileRepositoryImpl(FirebaseFirestore.instance),
-                reviewsRepository,
-              );
-
-              // 2. Proveer el Cubit a la página del mapa
-              return BlocProvider(
-                create: (context) => MapSearchCubit(housingRepository: housingRepository)..loadProperties(),
-                child: const MapSearchPage(),
-              );
-            }),
+            MaterialPageRoute(builder: (context) => const MapSearchPage()),
           );
         }
         if (index == 4) {
           // Página de perfil temporal
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => Scaffold(
-              appBar: AppBar(title: const Text('Perfil')),
-              body: const Center(
-                child: Text('Página de Perfil - En desarrollo'),
-              ),
-            )),
+            MaterialPageRoute(
+                builder: (context) => Scaffold(
+                      appBar: AppBar(title: const Text('Perfil')),
+                      body: const Center(
+                        child: Text('Página de Perfil - En desarrollo'),
+                      ),
+                    )),
           );
         }
       },
