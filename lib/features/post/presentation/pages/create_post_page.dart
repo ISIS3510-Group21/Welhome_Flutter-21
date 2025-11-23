@@ -52,7 +52,6 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
   late DraftPostSyncService _syncService;
   late ConnectivityService _connectivityService;
   bool _isOnline = true;
-  String _syncStatus = ''; // Para mostrar estado de sincronización
 
   @override
   void initState() {
@@ -374,7 +373,6 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
 
   void _showSyncMessage(String message) {
     if (!mounted) return;
-    setState(() => _syncStatus = message);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
