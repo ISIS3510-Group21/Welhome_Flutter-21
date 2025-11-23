@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:welhome/core/data/repositories/housing_repository.dart';
+import 'package:welhome/features/housing/domain/repositories/housing_repository.dart';
 import 'map_search_state.dart';
 
 class MapSearchCubit extends Cubit<MapSearchState> {
@@ -42,12 +42,14 @@ class MapSearchCubit extends Cubit<MapSearchState> {
       }
 
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 10,
+        ),
       );
 
       final userLocation = LatLng(position.latitude, position.longitude);
       
-      // Automatically load posts after getting location
       await loadHousingPostsWithDistance(userLocation);
       
     } catch (e) {
@@ -87,11 +89,6 @@ class MapSearchCubit extends Cubit<MapSearchState> {
         ));
       }
       
-    } on HousingRepositoryException catch (e) {
-      emit(MapSearchError.fromRepositoryException(
-        e,
-        lastUserLocation: userLocation,
-      ));
     } catch (e) {
       emit(MapSearchError(
         message: 'Error loading accommodations: ${e.toString()}',
@@ -146,7 +143,6 @@ class MapSearchCubit extends Cubit<MapSearchState> {
     }
   }
 
-  // Get current user location from state if available
   LatLng? get currentUserLocation {
     final currentState = state;
     

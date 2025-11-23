@@ -8,7 +8,6 @@ import 'picture_model.dart';
 import 'roomate_profile_model.dart';
 
 class HousingPostModel extends HousingPostEntity {
-
   final Timestamp closureDate;
   final Timestamp statusChange;
   final String? reviewsPath;
@@ -27,76 +26,78 @@ class HousingPostModel extends HousingPostEntity {
     super.title = "No title", 
     super.description = "",
     LocationModel? location,
-    super.thumbnail =
-        "https://img.freepik.com/free-photo/beautiful-interior-shot-modern-house-with-white-relaxing-walls-furniture-technology_181624-3828.jpg?semt=ais_hybrid&w=740&q=80",
+    super.thumbnail = "https://img.freepik.com/free-photo/beautiful-interior-shot-modern-house-with-white-relaxing-walls-furniture-technology_181624-3828.jpg?semt=ais_hybrid&w=740&q=80",
     super.host = "",
-    ReviewsModel? reviews, // Puede ser nulo inicialmente
+    ReviewsModel? reviews,
     this.reviewsPath,
     List<PictureModel> super.pictures = const [],
     List<TagHousingPostModel> tag = const [],
     List<AmenityModel> ammenities = const [],
     List<RoomateProfileModel> super.roomateProfile = const [],
-
-  })  :
-        closureDate = closureDate ?? Timestamp.now(),
+  })  : closureDate = closureDate ?? Timestamp.now(),
         statusChange = statusChange ?? Timestamp.now(),
         super(
-            creationDate: (creationDate).toDate(),
-            updateAt: (updateAt).toDate(),
-            reviews: reviews ?? const ReviewsModel(id: '', rating: 0.0, reviewQuantity: 0),
-            location: location ?? const LocationModel(),
-            tags: tag,
-            amenities: ammenities);
+          creationDate: creationDate.toDate(),
+          updateAt: updateAt.toDate(),
+          reviews: reviews ?? const ReviewsModel(id: '', rating: 0.0, reviewQuantity: 0),
+          location: location ?? const LocationModel(),
+          tags: tag,
+          amenities: ammenities,
+        );
 
   factory HousingPostModel.fromMap(Map<String, dynamic> data, {String? documentId}) {
-    // Helper to extract a string path/id from different possible stored types
-    String? extractStringFromReference(dynamic value) {
-      if (value == null) return null;
-      // If it's already a string
-      if (value is String) return value;
-      // If it's a DocumentReference from Firestore
-      if (value is DocumentReference) return value.path;
-      // If it's a JSON representation of a reference (e.g. _JsonDocumentReference)
-      if (value is Map) {
-        if (value.containsKey('path') && value['path'] is String) {
-          return value['path'] as String;
-        }
-        if (value.containsKey('_referencePath') && value['_referencePath'] is String) {
-          return value['_referencePath'] as String;
-        }
-        // Some serialized references store 'id' or 'documentId'
-        if (value.containsKey('id') && value['id'] is String) {
-          return value['id'] as String;
-        }
-      }
-      return null;
+    // Helper functions como en Kotlin
+    String? coerceDocPath(dynamic raw) {
+      if (raw == null) return null;
+      if (raw is String) return raw;
+      if (raw is DocumentReference) return raw.path;
+      return raw.toString();
     }
 
-    final dynamic hostField = data['host'];
-    final dynamic reviewsField = data['reviews'];
+    String coerceString(dynamic raw, [String defaultValue = '']) {
+      if (raw == null) return defaultValue;
+      if (raw is String) return raw;
+      if (raw is DocumentReference) return raw.path;
+      return raw.toString();
+    }
 
-    final hostString = extractStringFromReference(hostField) ?? (hostField?.toString() ?? "");
-    final reviewsPathString = extractStringFromReference(reviewsField);
+    LocationModel? coerceLocation(dynamic raw) {
+      if (raw == null) return null;
+      if (raw is Map<String, dynamic>) {
+        return LocationModel.fromMap(raw);
+      }
+      return const LocationModel();
+    }
+
+    // Aplicar coerción a todos los campos string
+    final hostString = coerceString(data['host']);
+    final addressString = coerceString(data['address']);
+    final titleString = coerceString(data['title'], 'No title');
+    final descriptionString = coerceString(data['description']);
+    final thumbnailString = coerceString(data['thumbnail']);
+    final statusString = coerceString(data['status'], 'available');
+    final bookingDatesString = coerceString(data['bookingDates']);
+
+    // Reviews - seguir el mismo patrón que Kotlin (siempre como string)
+    final reviewsPathString = coerceDocPath(data['reviews']);
 
     return HousingPostModel(
-      id: documentId ?? data['id'] ?? "",
+      id: documentId ?? coerceString(data['id']),
       creationDate: data['creationDate'] ?? Timestamp.now(),
       updateAt: data['updateAt'] ?? Timestamp.now(),
       closureDate: data['closureDate'] ?? Timestamp.now(),
       statusChange: data['statusChange'] ?? Timestamp.now(),
-      address: data['address'] ?? "",
+      address: addressString,
       price: (data['price'] ?? 0).toDouble(),
       rating: (data['rating'] ?? 0).toDouble(),
-      status: data['status'] ?? "available",
-      title: data['title'] ?? "No title",
-      description: data['description'] ?? "",
-      location: data['location'] != null
-          ? LocationModel.fromMap(data['location'])
-          : const LocationModel(),
-      thumbnail: data['thumbnail'] ?? "",
+      status: statusString,
+      title: titleString,
+      description: descriptionString,
+      location: coerceLocation(data['location']),
+      thumbnail: thumbnailString,
       host: hostString,
       reviewsPath: reviewsPathString,
-      bookingDates: data['bookingDates'] ?? "",
+      bookingDates: bookingDatesString,
       pictures: (data['Pictures'] as List<dynamic>?)
               ?.map((e) => PictureModel.fromMap(e))
               .toList() ??
@@ -110,59 +111,59 @@ class HousingPostModel extends HousingPostEntity {
               .toList() ??
           [],
       roomateProfile: (data['roomateProfile'] as List<dynamic>?)
-            ?.map((e) => RoomateProfileModel.fromMap(e))
-            .toList() ??
+              ?.map((e) => RoomateProfileModel.fromMap(e))
+              .toList() ??
           [],
     );
   }
 
   HousingPostModel copyWith({
-  String? id,
-  Timestamp? creationDate,
-  Timestamp? updateAt,
-  Timestamp? closureDate,
-  Timestamp? statusChange,
-  String? address,
-  double? price,
-  double? rating,
-  String? status,
-  String? title,
-  String? description,
-  LocationModel? location,
-  String? thumbnail,
-  String? host,
-  ReviewsModel? reviews,
-  String? reviewsPath,
-  String? bookingDates,
-  List<PictureModel>? pictures,
-  List<TagHousingPostModel>? tag,
-  List<AmenityModel>? ammenities,
-  List<RoomateProfileModel>? roomateProfile,
-}) {
-  return HousingPostModel(
-    id: id ?? this.id,
-    creationDate: creationDate ?? Timestamp.fromDate(super.creationDate),
-    updateAt: updateAt ?? Timestamp.fromDate(super.updateAt),
-    closureDate: closureDate ?? this.closureDate,
-    statusChange: statusChange ?? this.statusChange,
-    address: address ?? this.address,
-    price: price ?? this.price,
-    rating: rating ?? this.rating,
-    status: status ?? this.status,
-    title: title ?? this.title, 
-    description: description ?? super.description,
-    location: location ?? (super.location as LocationModel),
-    thumbnail: thumbnail ?? super.thumbnail,
-    host: host ?? super.host, 
-    reviews: reviews ?? this.reviews as ReviewsModel,
-    reviewsPath: reviewsPath ?? this.reviewsPath,
-    bookingDates: bookingDates ?? this.bookingDates,
-    pictures: pictures ?? (this.pictures as List<PictureModel>),
-    tag: tag ?? tags as List<TagHousingPostModel>,
-    ammenities: ammenities ?? amenities as List<AmenityModel>,
-    roomateProfile: roomateProfile ?? this.roomateProfile as List<RoomateProfileModel>,
-  );
-}
+    String? id,
+    Timestamp? creationDate,
+    Timestamp? updateAt,
+    Timestamp? closureDate,
+    Timestamp? statusChange,
+    String? address,
+    double? price,
+    double? rating,
+    String? status,
+    String? title,
+    String? description,
+    LocationModel? location,
+    String? thumbnail,
+    String? host,
+    ReviewsModel? reviews,
+    String? reviewsPath,
+    String? bookingDates,
+    List<PictureModel>? pictures,
+    List<TagHousingPostModel>? tag,
+    List<AmenityModel>? ammenities,
+    List<RoomateProfileModel>? roomateProfile,
+  }) {
+    return HousingPostModel(
+      id: id ?? this.id,
+      creationDate: creationDate ?? Timestamp.fromDate(super.creationDate),
+      updateAt: updateAt ?? Timestamp.fromDate(super.updateAt),
+      closureDate: closureDate ?? this.closureDate,
+      statusChange: statusChange ?? this.statusChange,
+      address: address ?? this.address,
+      price: price ?? this.price,
+      rating: rating ?? this.rating,
+      status: status ?? this.status,
+      title: title ?? this.title, 
+      description: description ?? super.description,
+      location: location ?? (super.location as LocationModel),
+      thumbnail: thumbnail ?? super.thumbnail,
+      host: host ?? super.host,
+      reviews: reviews ?? this.reviews as ReviewsModel,
+      reviewsPath: reviewsPath ?? this.reviewsPath,
+      bookingDates: bookingDates ?? this.bookingDates,
+      pictures: pictures ?? (this.pictures as List<PictureModel>),
+      tag: tag ?? tags as List<TagHousingPostModel>,
+      ammenities: ammenities ?? amenities as List<AmenityModel>,
+      roomateProfile: roomateProfile ?? this.roomateProfile as List<RoomateProfileModel>,
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -180,7 +181,7 @@ class HousingPostModel extends HousingPostEntity {
       'location': (location as LocationModel).toMap(),
       'thumbnail': thumbnail,
       'host': host,
-      'reviews': (reviews as ReviewsModel).toMap(),
+      'reviews': reviewsPath, // Usar reviewsPath en lugar de reviewsReference
       'bookingDates': bookingDates,
       'pictures': pictures.map((e) => (e as PictureModel).toMap()).toList(),
       'tag': tags.map((e) => (e as TagHousingPostModel).toMap()).toList(),

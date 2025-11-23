@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:welhome/core/data/models/housing_post.dart';
-import '../cubit/map_search_cubit.dart';
-import '../cubit/map_search_state.dart';
-import 'loading_state_widget.dart';
-import 'error_state_widget.dart';
+import 'package:welhome/features/housing/domain/entities/housing_post_with_distance_entity.dart'; // Importar la entidad
+import 'package:welhome/features/map_search/presentation/cubit/map_search_cubit.dart';
+import 'package:welhome/features/map_search/presentation/cubit/map_search_state.dart';
 
 class MapSectionWidget extends StatelessWidget {
   const MapSectionWidget({super.key});
@@ -25,15 +23,14 @@ class MapSectionWidget extends StatelessWidget {
 
   Widget _buildMapContent(BuildContext context, MapSearchState state) {
     if (state is MapSearchLoadingLocation) {
-      return const LoadingStateWidget(message: "Getting your location...");
+      return _buildLoadingState("Getting your location...");
     }
 
     if (state is MapSearchError) {
-      return ErrorStateWidget(
-        message: state.message,
-        onRetry: state.canRetry
-            ? () => context.read<MapSearchCubit>().retryLastAction()
-            : () {},
+      return _buildErrorState(
+        context,
+        state.message,
+        state.canRetry ? () => context.read<MapSearchCubit>().retryLastAction() : null,
       );
     }
 
@@ -63,7 +60,7 @@ class MapSectionWidget extends StatelessWidget {
         state is MapSearchLoaded || 
         state is MapSearchRefreshing) {
       LatLng userLocation;
-      List<HousingPostWithDistance> housingPostsWithDistance = [];
+      List<HousingPostWithDistanceEntity> housingPostsWithDistance = []; // Cambiar tipo
 
       if (state is MapSearchLoadingPosts) {
         userLocation = state.userLocation;
@@ -74,7 +71,7 @@ class MapSectionWidget extends StatelessWidget {
         userLocation = state.userLocation;
         housingPostsWithDistance = state.currentPosts;
       } else {
-        return const LoadingStateWidget(message: "Loading map...");
+        return _buildLoadingState("Loading map...");
       }
 
       final String? selectedPostId = (state is MapSearchLoaded)
@@ -100,7 +97,6 @@ class MapSectionWidget extends StatelessWidget {
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
           ),
-          // Loading indicator for refreshing state
           if (state is MapSearchRefreshing)
             Positioned(
               top: 8,
@@ -115,19 +111,48 @@ class MapSectionWidget extends StatelessWidget {
       );
     }
 
-    // Initial state
-    return const LoadingStateWidget(message: "Preparing map...");
+    return _buildLoadingState("Preparing map...");
+  }
+
+  Widget _buildLoadingState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
+          Text(message),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, String message, VoidCallback? onRetry) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(message, textAlign: TextAlign.center),
+          if (onRetry != null) ...[
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: onRetry,
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   Set<Marker> _createMarkers(
     BuildContext context,
     LatLng userLocation,
-    List<HousingPostWithDistance> housingPostsWithDistance,
+    List<HousingPostWithDistanceEntity> housingPostsWithDistance, // Cambiar tipo
     String? selectedPostId,
   ) {
     final Set<Marker> markers = {};
 
-    // User location marker (only show if we have posts or we're not in loading state)
     markers.add(
       Marker(
         markerId: const MarkerId("user_location"),
@@ -137,7 +162,6 @@ class MapSectionWidget extends StatelessWidget {
       ),
     );
 
-    // Housing post markers
     for (var postWithDistance in housingPostsWithDistance) {
       final position = LatLng(
         postWithDistance.location.lat,
@@ -154,7 +178,6 @@ class MapSectionWidget extends StatelessWidget {
             title: postWithDistance.title,
             snippet: "\$${postWithDistance.price.toInt()}/month • ${postWithDistance.formattedDistance} away",
             onTap: () {
-              // Trigger selection when tapping info window as well
               context.read<MapSearchCubit>().selectPost(postWithDistance.id);
             },
           ),

@@ -2,28 +2,53 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:welhome/features/housing/domain/entities/tag_housing_post_entity.dart';
 
 class TagHousingPostModel extends TagHousingPostEntity {
-  final DocumentReference? housingTag;
-
   const TagHousingPostModel({
     required super.id,
     required super.name,
-    this.housingTag,
+    required super.housingTag, // Cambiar a String para ser consistente
   });
 
   factory TagHousingPostModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    
+    String? coerceDocPath(dynamic raw) {
+      if (raw == null) return null;
+      if (raw is String) return raw;
+      if (raw is DocumentReference) return raw.path;
+      return raw.toString();
+    }
+
+    String coerceString(dynamic raw, [String defaultValue = '']) {
+      if (raw == null) return defaultValue;
+      if (raw is String) return raw;
+      return raw.toString();
+    }
+
     return TagHousingPostModel(
       id: doc.id,
-      name: data['name'] ?? '',
-      housingTag: data['housingTag'] as DocumentReference?,
+      name: coerceString(data['name']),
+      housingTag: coerceDocPath(data['housingTag']), // Ahora es String
     );
   }
 
   factory TagHousingPostModel.fromMap(Map<String, dynamic> data) {
+    String? coerceDocPath(dynamic raw) {
+      if (raw == null) return null;
+      if (raw is String) return raw;
+      if (raw is DocumentReference) return raw.path;
+      return raw.toString();
+    }
+
+    String coerceString(dynamic raw, [String defaultValue = '']) {
+      if (raw == null) return defaultValue;
+      if (raw is String) return raw;
+      return raw.toString();
+    }
+
     return TagHousingPostModel(
-      id: data['id'] ?? "",
-      name: data['name'] ?? "",
-      housingTag: data['housingTag'] as DocumentReference?,
+      id: coerceString(data['id']),
+      name: coerceString(data['name']),
+      housingTag: coerceDocPath(data['housingTag']), // Aplicar coerción aquí
     );
   }
 
@@ -31,7 +56,7 @@ class TagHousingPostModel extends TagHousingPostEntity {
     return {
       'id': id,
       'name': name,
-      'housingTag': housingTag,
+      'housingTag': housingTag, // Ahora es String
     };
   }
 }

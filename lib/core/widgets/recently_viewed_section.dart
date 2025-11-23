@@ -48,12 +48,10 @@ class RecentlyViewedSection extends StatelessWidget {
               child: RecentlyViewedItem(
                 post: post,
                 onTap: () {
-                  // La creación de dependencias ahora ocurre aquí, antes de navegar.
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) {
-                        // 1. Crear Repositorios
                         final reviewsRepository = ReviewsRepositoryImpl(FirebaseFirestore.instance);
                         final housingRepository = HousingRepositoryImpl(
                           FirebaseFirestore.instance,

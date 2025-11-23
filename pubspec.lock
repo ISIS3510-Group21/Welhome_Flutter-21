@@ -88,23 +88,23 @@ packages:
       sha256: "2f5709ae4d3d59dd8f7cd309b4e023046b57d8a6c82130785d2b0e5868084e76"
       url: "https://pub.dev"
     source: hosted
-    version: "1.19.1"
+    version: "1.18.0"
   connectivity_plus:
     dependency: "direct main"
     description:
       name: connectivity_plus
-      sha256: "33bae12a398f841c6cda09d1064212957265869104c478e5ad51e2fb26c3973c"
+      sha256: "224a77051d52a11fbad53dd57827594d3bd24f945af28bd70bab376d68d437f0"
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.0"
+    version: "5.0.2"
   connectivity_plus_platform_interface:
     dependency: transitive
     description:
       name: connectivity_plus_platform_interface
-      sha256: "42657c1715d48b167930d5f34d00222ac100475f73d10162ddf43e714932f204"
+      sha256: cf1d1c28f4416f8c654d7dc3cd638ec586076255d407cef3ddbdaf178272a71a
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.1"
+    version: "1.2.4"
   country_picker:
     dependency: "direct main"
     description:
@@ -560,6 +560,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.20.2"
+  js:
+    dependency: transitive
+    description:
+      name: js
+      sha256: f2c445dce49627136094980615a031419f7f3eb393237e4ecd97ac15dea343f3
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.7"
   latlong2:
     dependency: "direct main"
     description:
@@ -732,10 +740,10 @@ packages:
     dependency: transitive
     description:
       name: petitparser
-      sha256: "1a97266a94f7350d30ae522c0af07890c70b8e62c71e8e3920d1db4d23c057d1"
+      sha256: c15605cd28af66339f8eb6fbe0e541bfe2d1b72d5825efc6598f3e0a31b9ad27
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.1"
+    version: "6.0.2"
   platform:
     dependency: transitive
     description:
@@ -985,10 +993,10 @@ packages:
     dependency: transitive
     description:
       name: xml
-      sha256: "971043b3a0d3da28727e40ed3e0b5d18b742fa5a68665cca88e74b7876d5e025"
+      sha256: b015a8ad1c488f66851d762d3090a21c600e479dc75e68328c52774040cf9226
       url: "https://pub.dev"
     source: hosted
-    version: "6.6.1"
+    version: "6.5.0"
 sdks:
   dart: ">=3.8.0 <4.0.0"
   flutter: ">=3.24.0"

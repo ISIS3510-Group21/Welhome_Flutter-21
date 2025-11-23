@@ -1,4 +1,5 @@
 import 'package:welhome/features/housing/domain/entities/housing_post_entity.dart';
+import 'package:welhome/features/housing/domain/entities/housing_post_with_distance_entity.dart';
 
 abstract class HousingRepository {
 
@@ -20,4 +21,13 @@ abstract class HousingRepository {
     required double radiusInKm,
   });
 
+  Future<List<HousingPostEntity>> getAllHousingPosts();
+
+  Future<List<HousingPostEntity>> getAllAvailableHousingPosts();
+
+  Future<List<HousingPostWithDistanceEntity>> getHousingPostsWithDistance(
+    double userLat, 
+    double userLng,
+  );
 }
+

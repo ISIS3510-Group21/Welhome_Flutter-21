@@ -1,13 +1,17 @@
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:welhome/core/widgets/item_post_list.dart';
-import '../cubit/map_search_cubit.dart';
-import '../cubit/map_search_state.dart';
-import 'loading_state_widget.dart';
-import 'error_state_widget.dart';
-import 'package:welhome/core/data/models/housing_post.dart';
+import 'package:welhome/features/housing/data/repositories/housing_repository_impl.dart';
+import 'package:welhome/features/housing/data/repositories/reviews_repository_impl.dart';
+import 'package:welhome/features/housing/data/repositories/student_user_profile_repository_impl.dart';
+import 'package:welhome/features/housing/domain/entities/housing_post_with_distance_entity.dart';
+import 'package:welhome/features/map_search/presentation/cubit/map_search_cubit.dart';
+import 'package:welhome/features/map_search/presentation/cubit/map_search_state.dart';
+import 'package:welhome/features/postDetail/domain/usecases/get_post_details.dart';
+import 'package:welhome/features/postDetail/presentation/cubit/housing_detail_cubit.dart';
 import 'package:welhome/features/postDetail/presentation/pages/housing_detail_page.dart';
 
 class HousingListWidget extends StatefulWidget {
@@ -31,18 +35,19 @@ class _HousingListWidgetState extends State<HousingListWidget> {
   Widget build(BuildContext context) {
     return BlocConsumer<MapSearchCubit, MapSearchState>(
       listenWhen: (previous, current) {
-        // React only to selection changes and loaded/refreshing transitions
         String? prevSelected;
         String? currSelected;
         if (previous is MapSearchLoaded) prevSelected = previous.selectedPostId;
-        if (previous is MapSearchRefreshing) prevSelected = previous.selectedPostId;
+        if (previous is MapSearchRefreshing)
+          prevSelected = previous.selectedPostId;
         if (current is MapSearchLoaded) currSelected = current.selectedPostId;
-        if (current is MapSearchRefreshing) currSelected = current.selectedPostId;
+        if (current is MapSearchRefreshing)
+          currSelected = current.selectedPostId;
         return prevSelected != currSelected;
       },
       listener: (context, state) {
         String? selectedId;
-        List<HousingPostWithDistance> posts = const [];
+        List<HousingPostWithDistanceEntity> posts = [];
         if (state is MapSearchLoaded) {
           selectedId = state.selectedPostId;
           posts = state.housingPostsWithDistance;
@@ -73,11 +78,10 @@ class _HousingListWidgetState extends State<HousingListWidget> {
           alignment: 0.1,
         );
       } else {
-        // Fallback: approximate scroll based on index if widget not built yet
         final allKeys = _itemKeys.keys.toList();
         final index = allKeys.indexOf(postId);
         if (index >= 0 && _scrollController.hasClients) {
-          const estimatedExtent = 180.0; // conservative estimate
+          final estimatedExtent = 180.0;
           _scrollController.animateTo(
             index * estimatedExtent,
             duration: const Duration(milliseconds: 350),
@@ -90,11 +94,11 @@ class _HousingListWidgetState extends State<HousingListWidget> {
 
   Widget _buildListContent(BuildContext context, MapSearchState state) {
     if (state is MapSearchLoadingLocation) {
-      return const LoadingStateWidget(message: "Getting your location...");
+      return _buildLoadingState("Getting your location...");
     }
 
     if (state is MapSearchLoadingPosts) {
-      return LoadingStateWidget(message: state.message);
+      return _buildLoadingState(state.message);
     }
 
     if (state is MapSearchRefreshing) {
@@ -110,11 +114,12 @@ class _HousingListWidgetState extends State<HousingListWidget> {
     }
 
     if (state is MapSearchError) {
-      return ErrorStateWidget(
-        message: state.message,
-        onRetry: state.canRetry
+      return _buildErrorState(
+        context,
+        state.message,
+        state.canRetry
             ? () => context.read<MapSearchCubit>().retryLastAction()
-            : () {},
+            : null,
       );
     }
 
@@ -134,8 +139,8 @@ class _HousingListWidgetState extends State<HousingListWidget> {
               Text(
                 'No accommodations found within ${state.searchRadiusKm.toInt()} km',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                      color: Colors.grey[600],
+                    ),
               ),
             ],
           ),
@@ -154,21 +159,20 @@ class _HousingListWidgetState extends State<HousingListWidget> {
 
       return Column(
         children: [
-          // Results counter
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               children: [
                 Text(
                   '${state.totalResults} accommodations found',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                        color: Colors.grey[600],
+                      ),
                 ),
               ],
             ),
           ),
-          // Posts list
           Expanded(
             child: _buildPostsList(housingPostsWithDistance),
           ),
@@ -176,52 +180,117 @@ class _HousingListWidgetState extends State<HousingListWidget> {
       );
     }
 
-    return const LoadingStateWidget(message: "Starting search...");
+    return _buildLoadingState("Starting search...");
   }
 
-    Widget _buildPostsList(List<HousingPostWithDistance> posts) {
-  final random = Random();
-  final defaultPlaceholders = [
-    'lib/assets/images/fallback1.jpg',
-    'lib/assets/images/fallback2.jpg',
-  ];
-
-  return ListView.builder(
-    controller: _scrollController,
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    itemCount: posts.length,
-    itemBuilder: (context, index) {
-      final post = posts[index];
-      final key = _itemKeys.putIfAbsent(post.id, () => GlobalKey());
-
-      final hasNetworkImage = post.thumbnail.isNotEmpty;
-      final placeholderAsset = defaultPlaceholders[random.nextInt(defaultPlaceholders.length)];
-
-      return Column(
-        key: key,
+  Widget _buildLoadingState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ItemPostList(
-            title: post.title,
-            rating: post.rating,
-            price: "\$${post.price.toInt()} /month",
-            imageUrl: hasNetworkImage ? post.thumbnail : null,
-            placeholderAsset: placeholderAsset,
-            subtitle: "${post.formattedDistance} away",
-            onTap: () {
-              context.read<MapSearchCubit>().selectPost(post.id);
-
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => HousingDetailPage(postId: post.id),
-                ),
-              );
-            },
-          ),
-          if (index < posts.length - 1) const SizedBox(height: 12),
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
+          Text(message),
         ],
-      );
-    },
-  );
-}
+      ),
+    );
+  }
+
+  Widget _buildErrorState(
+      BuildContext context, String message, VoidCallback? onRetry) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(message, textAlign: TextAlign.center),
+          if (onRetry != null) ...[
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: onRetry,
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPostsList(List<HousingPostWithDistanceEntity> posts) {
+    final random = Random();
+    const defaultPlaceholders = [
+      'lib/assets/images/fallback1.jpg',
+      'lib/assets/images/fallback2.jpg',
+    ];
+
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: posts.length,
+      itemBuilder: (context, index) {
+        final post = posts[index];
+        final key = _itemKeys.putIfAbsent(post.id, () => GlobalKey());
+
+        // IMPROVED VALIDATION: Check for valid URL
+        final hasValidNetworkImage = post.thumbnail != null &&
+            post.thumbnail!.isNotEmpty &&
+            _isValidImageUrl(post.thumbnail!);
+
+        final placeholderAsset =
+            defaultPlaceholders[random.nextInt(defaultPlaceholders.length)];
+
+        return Column(
+          key: key,
+          children: [
+            ItemPostList(
+              title: post.title,
+              rating: post.rating,
+              price: "\$${post.price.toInt()} /month",
+              imageUrl: hasValidNetworkImage ? post.thumbnail! : null,
+              placeholderAsset: placeholderAsset,
+              subtitle: post.formattedDistance,
+              onTap: () {
+                context.read<MapSearchCubit>().selectPost(post.id);
+
+                // Obtén las dependencias necesarias
+                final reviewsRepository =
+                    ReviewsRepositoryImpl(FirebaseFirestore.instance);
+                final housingRepository = HousingRepositoryImpl(
+                  FirebaseFirestore.instance,
+                  StudentUserProfileRepositoryImpl(FirebaseFirestore.instance),
+                  reviewsRepository,
+                );
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider(
+                      create: (context) => HousingDetailCubit(
+                        getPostDetails: GetPostDetails(housingRepository),
+                      ),
+                      child: HousingDetailPage(postId: post.id),
+                    ),
+                  ),
+                );
+              },
+            ),
+            if (index < posts.length - 1) const SizedBox(height: 12),
+          ],
+        );
+      },
+    );
+  }
+
+// IMPROVED URL VALIDATION METHOD
+  bool _isValidImageUrl(String url) {
+    if (url.isEmpty) return false;
+
+    try {
+      final uri = Uri.parse(url);
+      return uri.isAbsolute &&
+          uri.host.isNotEmpty &&
+          (uri.scheme == 'http' || uri.scheme == 'https');
+    } catch (e) {
+      return false;
+    }
+  }
 }
