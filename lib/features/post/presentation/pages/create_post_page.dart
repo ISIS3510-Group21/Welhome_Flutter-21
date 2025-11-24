@@ -397,7 +397,7 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           decoration: BoxDecoration(
-            color: selected ? AppColors.violetBlue.withValues(alpha: 0.15) : Colors.transparent,
+            color: selected ? AppColors.violetBlue.withOpacity(0.15) : Colors.transparent,
             border: Border.all(color: AppColors.violetBlue, width: 2),
             borderRadius: BorderRadius.circular(8),
           ),
@@ -442,7 +442,7 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.2),
+                    color: Colors.orange.withOpacity(0.2),
                     border: Border.all(color: Colors.orange, width: 1),
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -466,7 +466,7 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.2),
+                    color: Colors.blue.withOpacity(0.2),
                     border: Border.all(color: Colors.blue, width: 1),
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -609,7 +609,7 @@ class _CreateHousingPostPageState extends State<CreateHousingPostPage> {
                                 }
                               });
                             },
-                            selectedColor: AppColors.violetBlue.withValues(alpha: 0.15),
+                            selectedColor: AppColors.violetBlue.withOpacity(0.15),
                             backgroundColor: AppColors.lavenderLight,
                             labelStyle: AppTextStyles.textRegular.copyWith(
                               color: selected ? AppColors.violetBlue : Colors.black,
