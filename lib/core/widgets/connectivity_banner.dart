@@ -26,7 +26,7 @@ class _ConnectivityBannerState extends State<ConnectivityBanner> {
   bool _isOnline = true;
   bool _isCheckingConnectivity = false;
   Timer? _periodicCheck;
-  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  StreamSubscription<ConnectivityResult>? _connectivitySubscription;
   final Connectivity _connectivity = Connectivity();
 
   @override
@@ -51,10 +51,10 @@ class _ConnectivityBannerState extends State<ConnectivityBanner> {
 
   Future<void> _initConnectivity() async {
     try {
-      final results = await _connectivity.checkConnectivity();
-      _updateConnectionStatus(results.first);
+      final result = await _connectivity.checkConnectivity();
+      _updateConnectionStatus(result);
       _connectivitySubscription = _connectivity.onConnectivityChanged
-          .listen((results) => _updateConnectionStatus(results.first));
+          .listen((result) => _updateConnectionStatus(result));
     } catch (e) {
       debugPrint('Error initializing connectivity: $e');
       _updateConnectionStatus(ConnectivityResult.none);
@@ -67,8 +67,8 @@ class _ConnectivityBannerState extends State<ConnectivityBanner> {
     setState(() => _isCheckingConnectivity = true);
 
     try {
-      final results = await _connectivity.checkConnectivity();
-      _updateConnectionStatus(results.first);
+      final result = await _connectivity.checkConnectivity();
+      _updateConnectionStatus(result);
     } catch (e) {
       debugPrint('Error checking connectivity: $e');
       _updateConnectionStatus(ConnectivityResult.none);

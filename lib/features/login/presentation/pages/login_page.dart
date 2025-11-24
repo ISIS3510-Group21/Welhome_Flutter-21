@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _checkConnectivity() {
     Connectivity().onConnectivityChanged.listen((result) {
-      final isOnline = !result.contains(ConnectivityResult.none);
+      final isOnline = result != ConnectivityResult.none;
       setState(() {
         _isOnline = isOnline;
       });

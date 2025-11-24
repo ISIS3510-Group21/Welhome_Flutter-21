@@ -7,12 +7,12 @@ class ConnectivityService {
   
   /// Stream que emite cambios de conectividad
   Stream<bool> get connectivityStream => _connectivity.onConnectivityChanged
-      .map((result) => !result.contains(ConnectivityResult.none));
+      .map((result) => result != ConnectivityResult.none);
 
   /// Obtiene el estado actual de conectividad
   Future<bool> isConnected() async {
     final result = await _connectivity.checkConnectivity();
-    final isOnline = !result.contains(ConnectivityResult.none);
+    final isOnline = result != ConnectivityResult.none;
     developer.log('Connectivity check: ${isOnline ? "online" : "offline"}');
     return isOnline;
   }
