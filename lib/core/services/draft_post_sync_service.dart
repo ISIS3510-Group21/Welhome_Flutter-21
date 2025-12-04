@@ -42,7 +42,7 @@ class DraftPostSyncService {
     _isSyncing = true;
     try {
       final pendingDrafts = await _draftManager.getPendingSyncs();
-      developer.log('Found ${pendingDrafts.length} pending drafts to sync');
+      developer.log('Found ${pendingDrafts.length} pending drafts to sync');  
 
       for (final draft in pendingDrafts) {
         await _syncDraft(draft);

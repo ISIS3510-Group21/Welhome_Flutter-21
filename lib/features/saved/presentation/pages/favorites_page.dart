@@ -164,6 +164,26 @@ class _FavoritesPageState extends State<FavoritesPage> {
     Navigator.of(context).pushReplacementNamed('/home');
   }
 
+  void _onBottomNavTap(int index) {
+    switch (index) {
+      case 0:
+        Navigator.of(context).pushReplacementNamed('/home');
+        break;
+      case 1:
+        Navigator.of(context).pushReplacementNamed('/search');
+        break;
+      case 2:
+        Navigator.of(context).pushReplacementNamed('/messages');
+        break;
+      case 3:
+        // Already on favorites page
+        break;
+      case 4:
+        Navigator.of(context).pushReplacementNamed('/profile');
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -186,9 +206,9 @@ class _FavoritesPageState extends State<FavoritesPage> {
             // Banner de offline
             if (!_isOnline)
               Positioned(
-                top: 0,
                 left: 0,
                 right: 0,
+                bottom: 70,
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   color: Colors.orange,
@@ -206,7 +226,10 @@ class _FavoritesPageState extends State<FavoritesPage> {
           ],
         ),
       ),
-      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 3),
+      bottomNavigationBar: CustomBottomNavBar(
+        currentIndex: 3,
+        onTap: _onBottomNavTap,
+      ),
     );
   }
 
