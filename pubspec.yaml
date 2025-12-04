@@ -53,6 +53,7 @@ dependencies:
   firebase_storage: ^13.0.2
   image_picker: ^0.8.7+5
   get_it: ^7.6.4
+  shimmer: ^3.0.0
 
 dependency_overrides:
   geolocator_android: 4.6.1
