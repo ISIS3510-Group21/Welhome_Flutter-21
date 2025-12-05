@@ -38,11 +38,13 @@ class _HousingListWidgetState extends State<HousingListWidget> {
         String? prevSelected;
         String? currSelected;
         if (previous is MapSearchLoaded) prevSelected = previous.selectedPostId;
-        if (previous is MapSearchRefreshing)
+        if (previous is MapSearchRefreshing) {
           prevSelected = previous.selectedPostId;
+        }
         if (current is MapSearchLoaded) currSelected = current.selectedPostId;
-        if (current is MapSearchRefreshing)
+        if (current is MapSearchRefreshing) {
           currSelected = current.selectedPostId;
+        }
         return prevSelected != currSelected;
       },
       listener: (context, state) {
@@ -81,7 +83,7 @@ class _HousingListWidgetState extends State<HousingListWidget> {
         final allKeys = _itemKeys.keys.toList();
         final index = allKeys.indexOf(postId);
         if (index >= 0 && _scrollController.hasClients) {
-          final estimatedExtent = 180.0;
+          const estimatedExtent = 180.0;
           _scrollController.animateTo(
             index * estimatedExtent,
             duration: const Duration(milliseconds: 350),

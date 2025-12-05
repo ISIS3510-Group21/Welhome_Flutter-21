@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:welhome/core/constants/app_text_styles.dart';
-import 'package:welhome/features/housing/domain/entities/housing_post_entity.dart';
 
 class HousingDetailHeader extends StatelessWidget {
   final List<String> imageUrls;

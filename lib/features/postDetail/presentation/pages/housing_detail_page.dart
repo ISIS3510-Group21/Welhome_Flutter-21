@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:welhome/core/constants/app_colors.dart';
-import 'package:welhome/features/housing/data/repositories/housing_repository_impl.dart';
-import 'package:welhome/features/housing/data/repositories/reviews_repository_impl.dart';
-import 'package:welhome/features/housing/data/repositories/student_user_profile_repository_impl.dart';
-import 'package:welhome/features/housing/domain/repositories/housing_repository.dart' as domain_repo;
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:welhome/features/postDetail/domain/usecases/get_post_details.dart';
 import 'package:welhome/core/widgets/custom_divider.dart';
 import 'package:welhome/core/widgets/generic_bottom_button.dart';
 import 'package:welhome/features/postDetail/presentation/cubit/housing_detail_cubit.dart';

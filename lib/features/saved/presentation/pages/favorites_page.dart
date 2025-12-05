@@ -283,7 +283,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.favorite_border,
             size: 80,
             color: AppColors.lavender,

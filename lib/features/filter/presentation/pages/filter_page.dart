@@ -115,8 +115,8 @@ class _FilterPageState extends State<FilterPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Sección de Amenidades
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
+                        const Padding(
+                          padding: EdgeInsets.all(16.0),
                           child: Text(
                             'Amenidades',
                             style: TextStyle(
