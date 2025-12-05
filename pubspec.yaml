@@ -44,7 +44,7 @@ dependencies:
   flutter_map: ^7.0.0
   latlong2: ^0.9.0
   firebase_core: ^4.1.1
-  firebase_auth: 6.1.0
+  firebase_auth: ^6.0.0
   cloud_firestore: ^6.0.2
   flutter_bloc: ^9.1.1
   google_maps_flutter: ^2.9.0
@@ -53,6 +53,7 @@ dependencies:
   firebase_storage: ^13.0.2
   image_picker: ^0.8.7+5
   get_it: ^7.6.4
+  shimmer: ^3.0.0
 
 dependency_overrides:
   geolocator_android: 4.6.1

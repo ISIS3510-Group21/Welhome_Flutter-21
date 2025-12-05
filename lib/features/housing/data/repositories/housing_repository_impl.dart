@@ -1,12 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:math';
 import 'package:welhome/features/housing/data/models/housing_post_model.dart';
-import 'package:welhome/features/housing/data/models/location_model.dart';
 import 'package:welhome/features/housing/data/models/amenity_model.dart';
 import 'package:welhome/features/housing/data/models/reviews_model.dart';
 import 'package:welhome/features/housing/data/models/roomate_profile_model.dart';
 import 'package:welhome/features/housing/domain/entities/housing_post_entity.dart';
-import 'package:welhome/features/housing/data/models/housing_post_with_distance.dart';
 import 'package:welhome/features/housing/domain/entities/housing_post_with_distance_entity.dart';
 import 'package:welhome/features/housing/domain/repositories/housing_repository.dart';
 import 'package:welhome/features/housing/domain/repositories/reviews_repository.dart';

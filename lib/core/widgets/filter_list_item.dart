@@ -101,7 +101,7 @@ class FilterListItem extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            property.rating?.toStringAsFixed(1) ?? '0.0',
+                            property.rating.toStringAsFixed(1) ?? '0.0',
                             style: AppTextStyles.textSmall,
                           ),
                         ],

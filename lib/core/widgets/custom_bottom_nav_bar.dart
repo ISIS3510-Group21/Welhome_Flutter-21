@@ -1,14 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:welhome/features/home/presentation/pages/home_page.dart';
-import 'package:welhome/features/housing/data/repositories/housing_repository_impl.dart';
-import 'package:welhome/features/housing/data/repositories/reviews_repository_impl.dart';
-import 'package:welhome/features/housing/data/repositories/student_user_profile_repository_impl.dart';
-import 'package:welhome/features/map_search/presentation/cubit/map_search_cubit.dart';
 import 'package:welhome/features/map_search/presentation/pages/map_search_page.dart';
-import 'package:welhome/features/filter/presentation/pages/filter_page.dart';
 import 'package:welhome/features/post/presentation/pages/create_post_page.dart';
 import 'package:welhome/features/saved/presentation/pages/saved_page.dart';
 import '../constants/app_colors.dart';
